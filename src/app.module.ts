@@ -1,0 +1,19 @@
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ConfigModule } from '@nestjs/config';
+import { JournalModule } from './journal/journal.module';
+import { AdminSeederModule } from './journal/seeder/admin-seeder.module';
+import { OriginCheckMiddleware } from './common/middleware/origin-check.middleware';
+
+@Module({
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, AdminSeederModule, PrismaModule, JournalModule],
+})
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(OriginCheckMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
