@@ -1,8 +1,11 @@
-import { Controller, Post, Get, Body, Req, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { JournalService } from './journal.service';
 import { JwtGuard } from 'src/auth/guard';
 import { CreateJournalDto } from './dto';
 import { AdminGuard } from './guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 
 @Controller('journals')
@@ -10,10 +13,40 @@ import { AdminGuard } from './guard';
 export class JournalController {
     constructor(private readonly journalService: JournalService) { }
 
-    @Post('add')
-    create(@Body() dto: CreateJournalDto, @Req() req) {
-        return this.journalService.createUserJournal(req.user.id, dto);
+    @Get('all-approved')
+    @UseGuards(AdminGuard)
+    getAllApprovedJournals() {
+        return this.journalService.getAllApprovedJournals();
     }
+    @Post('add')
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: diskStorage({
+                destination: './uploads',
+                filename: (req, file, callback) => {
+                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                    const ext = extname(file.originalname);
+                    callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+                },
+            }),
+        }),
+    )
+    create(
+        @Req() req,
+        @Body() dto: CreateJournalDto,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        console.log('req.user:', req.user);
+        console.log('file:', file);
+
+        if (!file) throw new BadRequestException('File is required');
+
+        return this.journalService.createUserJournal(req.user.id, {
+            ...dto,
+            file: file.filename,
+        });
+    }
+
 
     @Get('my')
     getMyJournals(@Req() req) {
@@ -42,4 +75,10 @@ export class JournalController {
     getApproved() {
         return this.journalService.getAllApprovedJournals();
     }
+    @Get('all')
+    @UseGuards(AdminGuard)
+    getAllJournals() {
+        return this.journalService.getAllJournals();
+    }
+
 }

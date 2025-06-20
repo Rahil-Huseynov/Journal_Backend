@@ -4,9 +4,12 @@ import { CreateJournalDto } from './dto';
 
 @Injectable()
 export class JournalService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  async createUserJournal(userId: number, dto: CreateJournalDto) {
+  async createUserJournal(
+    userId: number,
+    dto: CreateJournalDto & { file: string },
+  ) {
     return this.prisma.userJournal.create({
       data: {
         title: dto.title,
@@ -89,6 +92,12 @@ export class JournalService {
 
   async getAllApprovedJournals() {
     return this.prisma.allJournal.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+  async getAllJournals() {
+    return this.prisma.userJournal.findMany({
+      include: { user: true },
       orderBy: { createdAt: 'desc' },
     });
   }

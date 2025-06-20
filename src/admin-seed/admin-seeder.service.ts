@@ -8,7 +8,7 @@ export class AdminSeederService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     const adminEmail = this.config.get<string>('ADMIN_EMAIL');
@@ -18,18 +18,16 @@ export class AdminSeederService implements OnModuleInit {
       throw new ForbiddenException('Credentials incorrect');
     }
 
-    const existingAdmin = await this.prisma.user.findUnique({
+    const existingAdmin = await this.prisma.admin.findUnique({
       where: { email: adminEmail },
     });
 
     if (!existingAdmin) {
       const hash = await argon.hash(adminPassword);
-      await this.prisma.user.create({
+      await this.prisma.admin.create({
         data: {
           email: adminEmail,
           hash,
-          firstName: 'Admin',
-          lastName: 'User',
         },
       });
 

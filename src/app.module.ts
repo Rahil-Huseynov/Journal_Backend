@@ -4,7 +4,7 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { JournalModule } from './journal/journal.module';
-import { AdminSeederModule } from './journal/seeder/admin-seeder.module';
+import { AdminSeederModule } from './admin-seed/admin-seeder.module';
 import { OriginCheckMiddleware } from './common/middleware/origin-check.middleware';
 
 @Module({

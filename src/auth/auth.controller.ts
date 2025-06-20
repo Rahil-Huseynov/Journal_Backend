@@ -7,17 +7,24 @@ import { AnyFilesInterceptor } from "@nestjs/platform-express";
 export class AuthController {
     constructor(private authService: AuthService) { }
 
-    @Post('signup')
     @UseInterceptors(AnyFilesInterceptor())
-    signup(@Body() dto: AuthDto) {
-        return this.authService.signup(dto)
+    @Post('user/signup')
+    userSignup(@Body() dto: AuthDto) {
+        return this.authService.userSignup(dto);
     }
 
     @HttpCode(HttpStatus.OK)
-    @Post('signin')
     @UseInterceptors(AnyFilesInterceptor())
-    signin(@Body() dto: AuthDto) {
-        return this.authService.signin(dto)
+    @Post('user/login')
+    userLogin(@Body() dto: AuthDto) {
+        return this.authService.userSignin(dto);
+    }
+    
+    @HttpCode(HttpStatus.OK)
+    @UseInterceptors(AnyFilesInterceptor())
+    @Post('admin/login')
+    adminLogin(@Body() dto: AuthDto) {
+        return this.authService.signinAdmin(dto);
     }
 
     @Get('users')
@@ -37,9 +44,5 @@ export class AuthController {
         return this.authService.deleteUser(id);
     }
 
-    @Get('ping')
-    ping() {
-        return 'pong';
-    }
 
 }
