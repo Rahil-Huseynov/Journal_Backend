@@ -12,8 +12,12 @@ export class JournalService {
   ) {
     return this.prisma.userJournal.create({
       data: {
-        title: dto.title,
-        description: dto.description,
+        title_az: dto.title,
+        title_en: dto.title,
+        title_ru: dto.title,
+        description_az: dto.description,
+        description_en: dto.description,
+        description_ru: dto.description,
         file: dto.file,
         userId,
         approved: false,
@@ -27,7 +31,12 @@ export class JournalService {
       where: { userId },
       select: {
         id: true,
-        title: true,
+        title_az: true,
+        title_en: true,
+        title_ru: true,
+        description_az: true,
+        description_en: true,
+        description_ru: true,
         createdAt: true,
         approved: true,
         status: true,
@@ -53,8 +62,12 @@ export class JournalService {
 
     await this.prisma.allJournal.create({
       data: {
-        title: journal.title,
-        description: journal.description,
+        title_az: journal.title_az,
+        title_en: journal.title_en,
+        title_ru: journal.title_ru,
+        description_az: journal.description_az,
+        description_en: journal.description_en,
+        description_ru: journal.description_ru,
         file: journal.file,
         userEmail: journal.user.email,
         userName: journal.user.firstName ?? '',

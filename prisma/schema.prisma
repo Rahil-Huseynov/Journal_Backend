@@ -21,40 +21,83 @@ model Admin {
   createdAt DateTime @default(now())
 }
 
-
 model User {
   id          Int           @id @default(autoincrement())
   email       String        @unique
   hash        String
   firstName   String?
   lastName    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   userJournal UserJournal[]
+
   @@map("users")
 }
 
+model AllJournal {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  title_az       String?
+  title_en       String?
+  title_ru       String?
+  description_az String?
+  description_en String?
+  description_ru String?
+  file           String
+  userEmail      String
+  userName       String?
+
+  @@map("allJournal")
+}
+
 model UserJournal {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  title       String
-  description String?
-  file        String
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id])
-  approved    Boolean  @default(false)
-  status      String?
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  title_az       String?
+  title_en       String?
+  title_ru       String?
+  description_az String?
+  description_en String?
+  description_ru String?
+  file           String
+  userId         Int
+  user           User     @relation(fields: [userId], references: [id])
+  approved       Boolean  @default(false)
+  status         String?
+
+  category      Category[]    @relation("JournalCategories")
+  subCategories SubCategory[] @relation("JournalSubcategories")
+
   @@map("userJournal")
 }
 
-model AllJournal {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  title       String
-  description String?
-  file        String
-  userEmail   String
-  userName    String?
-  @@map("allJournal")
+model Category {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  title_az       String?
+  title_en       String?
+  title_ru       String?
+  description_az String?
+  description_en String?
+  description_ru String?
+  userJournal    UserJournal[] @relation("JournalCategories")
+  subCategories  SubCategory[] @relation("CategoryToSubCategory")
+
+  @@map("category")
+}
+
+model SubCategory {
+  id             Int     @id @default(autoincrement())
+  title_az       String?
+  title_en       String?
+  title_ru       String?
+  description_az String?
+  description_en String?
+  description_ru String?
+
+  categories Category[]    @relation("CategoryToSubCategory")
+  journals   UserJournal[] @relation("JournalSubcategories")
+
+  @@map("subcategory")
 }
