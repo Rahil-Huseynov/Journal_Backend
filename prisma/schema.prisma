@@ -81,6 +81,7 @@ model Category {
   description_az String?
   description_en String?
   description_ru String?
+  image          String
   userJournal    UserJournal[] @relation("JournalCategories")
   subCategories  SubCategory[] @relation("CategoryToSubCategory")
 
@@ -95,6 +96,7 @@ model SubCategory {
   description_az String?
   description_en String?
   description_ru String?
+  image          String
 
   categories Category[]    @relation("CategoryToSubCategory")
   journals   UserJournal[] @relation("JournalSubcategories")
