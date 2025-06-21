@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Put, Delete } from '@nestjs/common';
 import { JournalService } from './journal.service';
 import { JwtGuard } from 'src/auth/guard';
 import { CreateJournalDto } from './dto';
@@ -80,5 +80,43 @@ export class JournalController {
     getAllJournals() {
         return this.journalService.getAllJournals();
     }
+
+
+    @Put('update/:id')
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: diskStorage({
+                destination: './uploads',
+                filename: (req, file, callback) => {
+                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                    const ext = extname(file.originalname);
+                    callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+                },
+            }),
+        }),
+    )
+    update(
+        @Param('id') id: string,
+        @Body() dto: CreateJournalDto,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.journalService.updateUserJournal(+id, {
+            ...dto,
+            file: file?.filename, // File optional
+        });
+    }
+
+    @Delete('delete/:id')
+    delete(@Param('id') id: string, @Req() req) {
+        return this.journalService.deleteUserJournal(+id, req.user.id, false);
+    }
+
+    @Delete('admin-delete/:id')
+    @UseGuards(AdminGuard)
+    adminDelete(@Param('id') id: string, @Req() req) {
+        return this.journalService.deleteUserJournal(+id, req.user.id, true);
+    }
+
+
 
 }

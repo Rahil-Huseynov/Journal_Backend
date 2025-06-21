@@ -37,6 +37,7 @@ export class JournalService {
         description_az: true,
         description_en: true,
         description_ru: true,
+        file:true,
         createdAt: true,
         approved: true,
         status: true,
@@ -114,4 +115,48 @@ export class JournalService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+ async deleteUserJournal(journalId: number, userId: number, isAdmin: boolean = false) {
+  const journal = await this.prisma.userJournal.findUnique({
+    where: { id: journalId },
+  });
+
+  if (!journal) throw new NotFoundException('Journal not found');
+
+  if (!isAdmin && journal.userId !== userId) {
+    throw new NotFoundException('You are not authorized to delete this journal');
+  }
+
+  return this.prisma.userJournal.delete({
+    where: { id: journalId },
+  });
+}
+
+
+
+    async updateUserJournal(
+    journalId: number,
+    dto: CreateJournalDto & { file?: string },
+  ) {
+    const journal = await this.prisma.userJournal.findUnique({
+      where: { id: journalId },
+    });
+
+    if (!journal) throw new NotFoundException('Journal not found');
+
+    return this.prisma.userJournal.update({
+      where: { id: journalId },
+      data: {
+        title_az: dto.title,
+        title_en: dto.title,
+        title_ru: dto.title,
+        description_az: dto.description,
+        description_en: dto.description,
+        description_ru: dto.description,
+        file: dto.file ?? journal.file,
+      },
+    });
+  }
+
+
 }
