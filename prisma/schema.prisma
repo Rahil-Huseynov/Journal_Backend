@@ -96,6 +96,7 @@ model SubCategory {
   description_az String?
   description_en String?
   description_ru String?
+  file           String
   image          String
 
   categories Category[]    @relation("CategoryToSubCategory")

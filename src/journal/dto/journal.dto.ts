@@ -10,5 +10,5 @@ export class CreateJournalDto {
 
   @IsOptional()
   @IsString()
-  file?: string;  
+  file: string;  
 }

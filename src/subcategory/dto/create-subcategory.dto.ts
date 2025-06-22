@@ -20,4 +20,8 @@ export class CreateSubCategoryDto {
   @IsOptional()
   @IsString()
   image: string;
+
+  @IsOptional()
+  @IsString()
+  file: string;
 }
