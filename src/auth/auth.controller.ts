@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Req, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
 import { LoginAuthDto, RegisterAuthDto } from "./dto";
+import { AuthGuard } from "@nestjs/passport";
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +20,7 @@ export class AuthController {
     userLogin(@Body() dto: LoginAuthDto) {
         return this.authService.userSignin(dto);
     }
-    
+
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(AnyFilesInterceptor())
     @Post('admin/login')
@@ -42,6 +43,12 @@ export class AuthController {
     @Delete("users/:id")
     deleteUser(@Param("id", ParseIntPipe) id: number) {
         return this.authService.deleteUser(id);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('me')
+    getProfile(@Req() req) {
+        return this.authService.getUserById(req.user.id);
     }
 
 

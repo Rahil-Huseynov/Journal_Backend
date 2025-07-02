@@ -56,16 +56,34 @@ export class AuthService {
 
   async userSignin(dto: LoginAuthDto) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
+      where: { email: dto.email },
     });
 
     if (!user) throw new ForbiddenException('User not found');
+
     const pwMatches = await argon.verify(user.hash, dto.password);
     if (!pwMatches) throw new ForbiddenException('Incorrect password');
-    return this.signToken(user.id, user.email, false);
+
+    const token = await this.signToken(user.id, user.email, false);
+
+    if (!token || !token.access_token) {
+      throw new ForbiddenException('Token generation failed');
+    }
+
+    return {
+      accessToken: token.access_token,  
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,               
+        organization: user.organization,
+        position: user.position,
+      }
+    };
   }
+
 
   async signinAdmin(dto: LoginAuthDto) {
     const admin = await this.prisma.admin.findUnique({
@@ -166,4 +184,27 @@ export class AuthService {
 
     return { message: 'User deleted successfully' };
   }
+
+
+  async getUserById(userId: number) {
+  const user = await this.prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      organization: true,
+      position: true,
+    },
+  });
+
+  if (!user) {
+    throw new ForbiddenException('User not found');
+  }
+
+  return user;
+}
+
 }
