@@ -1,10 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { LoginAuthDto, RegisterAuthDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
     private config: ConfigService,
   ) { }
 
-  async userSignup(dto: AuthDto) {
+  async userSignup(dto: RegisterAuthDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -28,6 +28,17 @@ export class AuthService {
         data: {
           email: dto.email,
           hash,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          fatherName: dto.fatherName,
+          role: dto.role,
+          organization: dto.organization,
+          position: dto.position,
+          phoneCode: dto.phoneCode,
+          phoneNumber: dto.phoneNumber,
+          address: dto.address,
+          fin: dto.fin,
+          idSerial: dto.idSerial,
         },
       });
 
@@ -43,7 +54,7 @@ export class AuthService {
     }
   }
 
-  async userSignin(dto: AuthDto) {
+  async userSignin(dto: LoginAuthDto) {
     const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
@@ -56,7 +67,7 @@ export class AuthService {
     return this.signToken(user.id, user.email, false);
   }
 
-  async signinAdmin(dto: AuthDto) {
+  async signinAdmin(dto: LoginAuthDto) {
     const admin = await this.prisma.admin.findUnique({
       where: {
         email: dto.email,
@@ -100,7 +111,7 @@ export class AuthService {
     });
   }
 
-  async putUser(userId: number, dto: Partial<AuthDto>) {
+  async putUser(userId: number, dto: Partial<LoginAuthDto>) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });

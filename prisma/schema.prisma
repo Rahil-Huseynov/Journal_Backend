@@ -29,7 +29,7 @@ model User {
   firstName    String?
   lastName     String?
   fatherName   String?
-  rol          String?
+  role         String?
   organization String?
   position     String?
   phoneCode    String?

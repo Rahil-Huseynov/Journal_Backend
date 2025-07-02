@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, UseInterceptors } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { AuthDto } from "./dto";
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
+import { LoginAuthDto, RegisterAuthDto } from "./dto";
 
 @Controller('auth')
 export class AuthController {
@@ -9,21 +9,21 @@ export class AuthController {
 
     @UseInterceptors(AnyFilesInterceptor())
     @Post('user/signup')
-    userSignup(@Body() dto: AuthDto) {
+    userSignup(@Body() dto: RegisterAuthDto) {
         return this.authService.userSignup(dto);
     }
 
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(AnyFilesInterceptor())
     @Post('user/login')
-    userLogin(@Body() dto: AuthDto) {
+    userLogin(@Body() dto: LoginAuthDto) {
         return this.authService.userSignin(dto);
     }
     
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(AnyFilesInterceptor())
     @Post('admin/login')
-    adminLogin(@Body() dto: AuthDto) {
+    adminLogin(@Body() dto: LoginAuthDto) {
         return this.authService.signinAdmin(dto);
     }
 
@@ -35,7 +35,7 @@ export class AuthController {
     @Put("users/:id")
     updateUser(
         @Param("id", ParseIntPipe) id: number,
-        @Body() dto: Partial<AuthDto>) {
+        @Body() dto: Partial<LoginAuthDto>) {
         return this.authService.putUser(id, dto)
     }
 
