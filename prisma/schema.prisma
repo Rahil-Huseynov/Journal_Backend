@@ -19,6 +19,7 @@ model Admin {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   hash      String
+  role      String
   createdAt DateTime @default(now())
 }
 

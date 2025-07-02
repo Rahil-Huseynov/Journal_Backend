@@ -11,29 +11,31 @@ export class AdminSeederService implements OnModuleInit {
   ) { }
 
   async onModuleInit() {
-    const adminEmail = this.config.get<string>('ADMIN_EMAIL');
-    const adminPassword = this.config.get<string>('ADMIN_PASSWORD');
+    const SuperadminEmail = this.config.get<string>('SUPER_ADMIN_EMAIL');
+    const SuperadminPassword = this.config.get<string>('SUPER_ADMIN_PASSWORD');
+    const SuperadminRole = this.config.get<string|undefined>('SUPER_ADMIN_ROLE');
 
-    if (!adminEmail || !adminPassword) {
+    if (!SuperadminEmail || !SuperadminPassword || !SuperadminRole) {
       throw new ForbiddenException('Credentials incorrect');
     }
 
     const existingAdmin = await this.prisma.admin.findUnique({
-      where: { email: adminEmail },
+      where: { email: SuperadminEmail },
     });
 
     if (!existingAdmin) {
-      const hash = await argon.hash(adminPassword);
+      const hash = await argon.hash(SuperadminPassword);
       await this.prisma.admin.create({
         data: {
-          email: adminEmail,
+          email: SuperadminEmail,
           hash,
+          role: SuperadminRole
         },
       });
 
-      console.log('✅ Admin istifadəçi yaradıldı:', adminEmail);
+      console.log('✅ Admin istifadəçi yaradıldı:', SuperadminEmail);
     } else {
-      console.log('ℹ️ Admin artıq mövcuddur:', adminEmail);
+      console.log('ℹ️ Admin artıq mövcuddur:', SuperadminEmail);
     }
   }
 }

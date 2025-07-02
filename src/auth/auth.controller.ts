@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Req, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Req, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
-import { LoginAuthDto, RegisterAuthDto } from "./dto";
+import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto } from "./dto";
 import { AuthGuard } from "@nestjs/passport";
 
 @Controller('auth')
@@ -14,18 +14,18 @@ export class AuthController {
         return this.authService.userSignup(dto);
     }
 
-    @HttpCode(HttpStatus.OK)
     @UseInterceptors(AnyFilesInterceptor())
-    @Post('user/login')
-    userLogin(@Body() dto: LoginAuthDto) {
-        return this.authService.userSignin(dto);
+    @Post('admin/signup')
+    adminSignup(@Body() dto: RegisterAdminAuthDto) {
+        return this.authService.adminSignup(dto);
     }
+
 
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(AnyFilesInterceptor())
-    @Post('admin/login')
-    adminLogin(@Body() dto: LoginAuthDto) {
-        return this.authService.signinAdmin(dto);
+    @Post('login')
+    async login(@Body() dto: LoginAuthDto) {
+        return this.authService.signin(dto);
     }
 
     @Get('users')
@@ -47,9 +47,16 @@ export class AuthController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('me')
-    getProfile(@Req() req) {
+    async getProfile(@Req() req) {
+        if (!req.user.id) {
+            throw new ForbiddenException('User ID not found in token');
+        }
+
+        if (req.user.isAdmin) {
+            return this.authService.getAdminById(req.user.id);
+        }
+
         return this.authService.getUserById(req.user.id);
     }
-
 
 }
