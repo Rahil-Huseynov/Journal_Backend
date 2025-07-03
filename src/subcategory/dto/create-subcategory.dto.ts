@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsInt } from 'class-validator';
 
 export class CreateSubCategoryDto {
   @IsOptional()
@@ -24,4 +24,7 @@ export class CreateSubCategoryDto {
   @IsOptional()
   @IsString()
   file: string;
+
+  @IsInt()
+  categoryId: number; 
 }

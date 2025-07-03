@@ -199,6 +199,7 @@ export class AuthService {
         role: true,
         organization: true,
         position: true,
+        userJournal:true
       },
     });
 

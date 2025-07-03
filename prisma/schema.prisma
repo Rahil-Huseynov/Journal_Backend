@@ -64,6 +64,42 @@ model AllJournal {
   @@map("allJournal")
 }
 
+model Category {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  title_az       String?
+  title_en       String?
+  title_ru       String?
+  description_az String?
+  description_en String?
+  description_ru String?
+  image          String
+
+  subCategories  SubCategory[]          
+  userJournal    UserJournal[] @relation("JournalCategories")
+
+  @@map("category")
+}
+
+model SubCategory {
+  id             Int      @id @default(autoincrement())
+  title_az       String?
+  title_en       String?
+  title_ru       String?
+  description_az String?
+  description_en String?
+  description_ru String?
+  file           String
+  image          String
+
+  categoryId     Int
+  category       Category @relation(fields: [categoryId], references: [id])
+  
+  journals       UserJournal[] @relation("JournalSubcategories") 
+
+  @@map("subcategory")
+}
+
 model UserJournal {
   id             Int      @id @default(autoincrement())
   createdAt      DateTime @default(now())
@@ -80,41 +116,9 @@ model UserJournal {
   approved       Boolean  @default(false)
   status         String?
 
-  category      Category[]    @relation("JournalCategories")
-  subCategories SubCategory[] @relation("JournalSubcategories")
+  category       Category[]    @relation("JournalCategories")   
+  subCategories  SubCategory[] @relation("JournalSubcategories")
 
   @@map("userJournal")
 }
 
-model Category {
-  id             Int           @id @default(autoincrement())
-  createdAt      DateTime      @default(now())
-  title_az       String?
-  title_en       String?
-  title_ru       String?
-  description_az String?
-  description_en String?
-  description_ru String?
-  image          String
-  userJournal    UserJournal[] @relation("JournalCategories")
-  subCategories  SubCategory[] @relation("CategoryToSubCategory")
-
-  @@map("category")
-}
-
-model SubCategory {
-  id             Int     @id @default(autoincrement())
-  title_az       String?
-  title_en       String?
-  title_ru       String?
-  description_az String?
-  description_en String?
-  description_ru String?
-  file           String
-  image          String
-
-  categories Category[]    @relation("CategoryToSubCategory")
-  journals   UserJournal[] @relation("JournalSubcategories")
-
-  @@map("subcategory")
-}

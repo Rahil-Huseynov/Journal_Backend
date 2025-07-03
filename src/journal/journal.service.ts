@@ -6,25 +6,40 @@ import { CreateJournalDto } from './dto';
 export class JournalService {
   constructor(private prisma: PrismaService) { }
 
-  async createUserJournal(
-    userId: number,
-    dto: CreateJournalDto & { file: string },
-  ) {
-    return this.prisma.userJournal.create({
+  async createJournal(dto: CreateJournalDto, userId: number) {
+    let filePath = '';
+    if (dto.file) {
+      filePath = '/uploads/' + dto.file;
+    }
+
+    const journal = await this.prisma.userJournal.create({
       data: {
-        title_az: dto.title,
-        title_en: dto.title,
-        title_ru: dto.title,
-        description_az: dto.description,
-        description_en: dto.description,
-        description_ru: dto.description,
-        file: dto.file,
-        userId,
+        title_az: dto.title_az,
+        title_en: dto.title_en,
+        title_ru: dto.title_ru,
+        description_az: dto.description_az,
+        description_en: dto.description_en,
+        description_ru: dto.description_ru,
+        status: dto.status,
+        file: filePath,
+        userId: userId,
+        category: {
+          connect: dto.categoryIds.map((id) => ({ id })),
+        },
+        subCategories: {
+          connect: dto.subCategoryIds.map((id) => ({ id })),
+        },
         approved: false,
-        status: null,
       },
     });
+
+    return journal;
   }
+
+
+
+
+
 
   async getUserJournals(userId: number) {
     return this.prisma.userJournal.findMany({
@@ -37,7 +52,7 @@ export class JournalService {
         description_az: true,
         description_en: true,
         description_ru: true,
-        file:true,
+        file: true,
         createdAt: true,
         approved: true,
         status: true,
@@ -116,25 +131,25 @@ export class JournalService {
     });
   }
 
- async deleteUserJournal(journalId: number, userId: number, isAdmin: boolean = false) {
-  const journal = await this.prisma.userJournal.findUnique({
-    where: { id: journalId },
-  });
+  async deleteUserJournal(journalId: number, userId: number, isAdmin: boolean = false) {
+    const journal = await this.prisma.userJournal.findUnique({
+      where: { id: journalId },
+    });
 
-  if (!journal) throw new NotFoundException('Journal not found');
+    if (!journal) throw new NotFoundException('Journal not found');
 
-  if (!isAdmin && journal.userId !== userId) {
-    throw new NotFoundException('You are not authorized to delete this journal');
+    if (!isAdmin && journal.userId !== userId) {
+      throw new NotFoundException('You are not authorized to delete this journal');
+    }
+
+    return this.prisma.userJournal.delete({
+      where: { id: journalId },
+    });
   }
 
-  return this.prisma.userJournal.delete({
-    where: { id: journalId },
-  });
-}
 
 
-
-    async updateUserJournal(
+  async updateUserJournal(
     journalId: number,
     dto: CreateJournalDto & { file?: string },
   ) {
@@ -147,12 +162,12 @@ export class JournalService {
     return this.prisma.userJournal.update({
       where: { id: journalId },
       data: {
-        title_az: dto.title,
-        title_en: dto.title,
-        title_ru: dto.title,
-        description_az: dto.description,
-        description_en: dto.description,
-        description_ru: dto.description,
+        title_az: dto.title_az,
+        title_en: dto.title_en,
+        title_ru: dto.title_ru,
+        description_az: dto.description_az,
+        description_en: dto.description_en,
+        description_ru: dto.description_ru,
         file: dto.file ?? journal.file,
       },
     });

@@ -4,7 +4,7 @@ import { CreateSubCategoryDto, UpdateSubCategoryDto } from './dto';
 
 @Injectable()
 export class SubCategoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   getAll() {
     return this.prisma.subCategory.findMany({
@@ -20,9 +20,22 @@ export class SubCategoryService {
 
   create(dto: CreateSubCategoryDto) {
     return this.prisma.subCategory.create({
-      data: dto,
+      data: {
+        title_az: dto.title_az,
+        title_en: dto.title_en,
+        title_ru: dto.title_ru,
+        description_az: dto.description, 
+        description_en: dto.description,
+        description_ru: dto.description,
+        image: dto.image,
+        file: dto.file,
+        category: {
+          connect: { id: dto.categoryId },
+        },
+      },
     });
   }
+
 
   async update(id: number, dto: UpdateSubCategoryDto) {
     const exists = await this.prisma.subCategory.findUnique({ where: { id } });

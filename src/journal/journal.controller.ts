@@ -18,33 +18,50 @@ export class JournalController {
     getAllApprovedJournals() {
         return this.journalService.getAllApprovedJournals();
     }
+
+
     @Post('add')
-    @UseInterceptors(
-        FileInterceptor('file', {
-            storage: diskStorage({
-                destination: './uploads',
-                filename: (req, file, callback) => {
-                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                    const ext = extname(file.originalname);
-                    callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-                },
-            }),
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: './uploads',
+            filename: (req, file, callback) => {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                const ext = extname(file.originalname);
+                callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+            },
         }),
-    )
-    create(
-        @Req() req,
-        @Body() dto: CreateJournalDto,
+    }))
+    async createJournal(
         @UploadedFile() file: Express.Multer.File,
+        @Body() body: any,
+        @Req() req: any,
     ) {
-        console.log('req.user:', req.user);
-        console.log('file:', file);
+        let categoryIds: number[] = [];
+        let subCategoryIds: number[] = [];
 
-        if (!file) throw new BadRequestException('File is required');
+        try {
+            categoryIds = JSON.parse(body.categoryIds);
+            subCategoryIds = JSON.parse(body.subCategoryIds);
+        } catch (error) {
+            throw new BadRequestException('Invalid categoryIds or subCategoryIds format');
+        }
 
-        return this.journalService.createUserJournal(req.user.id, {
-            ...dto,
-            file: file.filename,
-        });
+        const dto: CreateJournalDto = {
+            title_az: body.title_az,
+            title_en: body.title_en,
+            title_ru: body.title_ru,
+            description_az: body.description_az,
+            description_en: body.description_en,
+            description_ru: body.description_ru,
+            status: body.status,
+            categoryIds,
+            subCategoryIds,
+            file: file?.filename,
+        };
+
+        const userId = Number(req.user?.id);
+
+        return this.journalService.createJournal(dto, userId);
     }
 
 
@@ -82,29 +99,29 @@ export class JournalController {
     }
 
 
-    @Put('update/:id')
-    @UseInterceptors(
-        FileInterceptor('file', {
-            storage: diskStorage({
-                destination: './uploads',
-                filename: (req, file, callback) => {
-                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                    const ext = extname(file.originalname);
-                    callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-                },
-            }),
-        }),
-    )
-    update(
-        @Param('id') id: string,
-        @Body() dto: CreateJournalDto,
-        @UploadedFile() file: Express.Multer.File,
-    ) {
-        return this.journalService.updateUserJournal(+id, {
-            ...dto,
-            file: file?.filename, // File optional
-        });
-    }
+    // @Put('update/:id')
+    // @UseInterceptors(
+    //     FileInterceptor('file', {
+    //         storage: diskStorage({
+    //             destination: './uploads',
+    //             filename: (req, file, callback) => {
+    //                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    //                 const ext = extname(file.originalname);
+    //                 callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+    //             },
+    //         }),
+    //     }),
+    // )
+    // update(
+    //     @Param('id') id: string,
+    //     @Body() dto: CreateJournalDto,
+    //     @UploadedFile() file: Express.Multer.File,
+    // ) {
+    //     return this.journalService.updateUserJournal(+id, {
+    //         ...dto,
+    //         file: file?.filename, // File optional
+    //     });
+    // }
 
     @Delete('delete/:id')
     delete(@Param('id') id: string, @Req() req) {

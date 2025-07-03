@@ -1,1 +1,1 @@
-export * from "./journal.dto"
+export * from "./create-journal.dto"

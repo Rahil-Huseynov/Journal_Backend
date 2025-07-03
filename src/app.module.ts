@@ -8,9 +8,16 @@ import { AdminSeederModule } from './admin-seed/admin-seeder.module';
 // import { OriginCheckMiddleware } from './common/middleware/origin-check.middleware';
 import { CategoryModule } from './category/category.module';
 import { SubCategoryModule } from './subcategory/subcategory.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule,
+  ServeStaticModule.forRoot({
+    rootPath: join(__dirname, '..', 'uploads'),
+    serveRoot: '/uploads',
+  }),
+  ],
 })
 export class AppModule {
   // configure(consumer: MiddlewareConsumer) {
