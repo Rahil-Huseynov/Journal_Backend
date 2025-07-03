@@ -69,6 +69,8 @@ export class AuthService {
         accessToken: token.access_token,
         admin: {
           id: admin.id,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
           email: admin.email,
           role: 'admin',
         }
@@ -186,43 +188,45 @@ export class AuthService {
     return { message: 'User deleted successfully' };
   }
 
-async getUserById(userId: number) {
+  async getUserById(userId: number) {
     const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-            organization: true,
-            position: true,
-        },
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        organization: true,
+        position: true,
+      },
     });
 
     if (!user) {
-        throw new ForbiddenException('User not found');
+      throw new ForbiddenException('User not found');
     }
 
     return user;
-}
+  }
 
-async getAdminById(adminId: number) {
+  async getAdminById(adminId: number) {
     const admin = await this.prisma.admin.findUnique({
-        where: { id: adminId },
-        select: {
-            id: true,
-            email: true,
-            role: true,
-        },
+      where: { id: adminId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+      },
     });
 
     if (!admin) {
-        throw new ForbiddenException('Admin not found');
+      throw new ForbiddenException('Admin not found');
     }
 
     return admin;
-}
+  }
 
 
 
@@ -241,6 +245,8 @@ async getAdminById(adminId: number) {
       const admin = await this.prisma.admin.create({
         data: {
           email: dto.email,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
           hash,
           role: dto.role
         },

@@ -13,4 +13,13 @@ export class RegisterAdminAuthDto {
     @IsString()
     @IsNotEmpty()
     role:string
+
+
+    @IsString()
+    @IsNotEmpty()
+    firstName?: string;
+
+    @IsString()
+    @IsNotEmpty()
+    lastName?: string;
 }

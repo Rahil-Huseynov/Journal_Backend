@@ -14,8 +14,10 @@ export class AdminSeederService implements OnModuleInit {
     const SuperadminEmail = this.config.get<string>('SUPER_ADMIN_EMAIL');
     const SuperadminPassword = this.config.get<string>('SUPER_ADMIN_PASSWORD');
     const SuperadminRole = this.config.get<string|undefined>('SUPER_ADMIN_ROLE');
+    const SuperadminFirstName = this.config.get<string>('SUPER_ADMIN_FIRSTNAME');
+    const SuperadminLastName = this.config.get<string>('SUPER_ADMIN_LASTNAME');
 
-    if (!SuperadminEmail || !SuperadminPassword || !SuperadminRole) {
+    if (!SuperadminEmail || !SuperadminPassword || !SuperadminRole || !SuperadminFirstName || !SuperadminLastName) {
       throw new ForbiddenException('Credentials incorrect');
     }
 
@@ -27,6 +29,8 @@ export class AdminSeederService implements OnModuleInit {
       const hash = await argon.hash(SuperadminPassword);
       await this.prisma.admin.create({
         data: {
+          firstName: SuperadminFirstName,
+          lastName: SuperadminLastName,
           email: SuperadminEmail,
           hash,
           role: SuperadminRole
