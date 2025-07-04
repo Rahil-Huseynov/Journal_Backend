@@ -16,7 +16,6 @@ export class AuthService {
 
 
   async userSignup(dto: RegisterAuthDto) {
-    // Email yoxlama
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -24,7 +23,6 @@ export class AuthService {
       throw new ForbiddenException('Email already in use');
     }
 
-    // Passport ID yoxlama (xarici vətəndaş üçün)
     if (dto.isForeignCitizen && dto.passportId) {
       const existingPassport = await this.prisma.user.findUnique({
         where: { passportId: dto.passportId },
@@ -34,7 +32,6 @@ export class AuthService {
       }
     }
 
-    // PassportId boşdursa null et
     if (dto.isForeignCitizen) {
       if (!dto.passportId || dto.passportId.trim() === '') {
         dto.passportId = null;

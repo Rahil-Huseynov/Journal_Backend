@@ -1,4 +1,3 @@
-// src/subcategory/subcategory.controller.ts
 import {
   Controller,
   Get,

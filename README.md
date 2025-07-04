@@ -25,13 +25,6 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## 🔗 Server URL
-
-The backend server for this project is deployed and accessible at:
-
-[https://nestjs-test-bddf.onrender.com](https://nestjs-test-bddf.onrender.com)
-
-You can use this URL to make API requests.
 
 ## Project setup
 
