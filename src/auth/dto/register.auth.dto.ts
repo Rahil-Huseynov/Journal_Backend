@@ -1,57 +1,74 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  IsBoolean,
+  ValidateIf,
+} from "class-validator";
+import { Transform } from "class-transformer";
 
 export class RegisterAuthDto {
-    @IsEmail()
-    @IsNotEmpty()
-    email: string;
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @MinLength(6)
-    password: string
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(6)
+  password: string;
 
-    @IsString()
-    @IsNotEmpty()
-    firstName?: string;
+  @IsString()
+  @IsNotEmpty()
+  firstName?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    lastName?: string;
-    
-    @IsString()
-    @IsNotEmpty()
-    fatherName?: string;
-    
-    @IsString()
-    @IsNotEmpty()
-    role?: string;
+  @IsString()
+  @IsNotEmpty()
+  lastName?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    organization?: string;
+  @IsString()
+  fatherName?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    position?: string;
+  @IsString()
+  @IsNotEmpty()
+  role?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    phoneCode?: string;
-    
-    @IsString()
-    @IsNotEmpty()
-    phoneNumber?: string;
-    
-    @IsString()
-    @IsNotEmpty()
-    address?: string;
-    
-    @IsString()
-    @IsNotEmpty()
-    fin?: string;
-    
-    @IsString()
-    @IsNotEmpty()
-    idSerial?: string;
+  @IsString()
+  @IsNotEmpty()
+  organization?: string;
 
+  @IsString()
+  @IsNotEmpty()
+  position?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  phoneCode?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  phoneNumber?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  address?: string;
+
+  @IsBoolean()
+  @Transform(({ value }) => value === "true" || value === true)
+  isForeignCitizen: boolean;
+
+  @ValidateIf((o) => !o.isForeignCitizen)
+  @IsString()
+  @IsNotEmpty()
+  fin: string;
+
+  @ValidateIf((o) => !o.isForeignCitizen)
+  @IsString()
+  @IsNotEmpty()
+  idSerial: string;
+
+  @ValidateIf((o) => o.isForeignCitizen)
+  @IsString()
+  @IsNotEmpty()
+  passportId: string;
 }

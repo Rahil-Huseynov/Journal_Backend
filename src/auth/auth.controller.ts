@@ -10,7 +10,7 @@ export class AuthController {
 
     @UseInterceptors(AnyFilesInterceptor())
     @Post('user/signup')
-    userSignup(@Body() dto: RegisterAuthDto) {
+    async userSignup(@Body() dto: RegisterAuthDto) {
         return this.authService.userSignup(dto);
     }
 

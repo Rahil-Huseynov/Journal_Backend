@@ -39,8 +39,10 @@ model User {
   phoneCode    String?
   phoneNumber  String?
   address      String?
-  fin          String?
-  idSerial     String?
+  fin          String?       @unique
+  idSerial     String?       @unique
+  passportId   String?       @unique
+  isForeignCitizen Boolean @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   userJournal  UserJournal[]

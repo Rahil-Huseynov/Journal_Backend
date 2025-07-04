@@ -14,6 +14,7 @@ export class AuthService {
     private config: ConfigService,
   ) { }
 
+
   async userSignup(dto: RegisterAuthDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -23,6 +24,7 @@ export class AuthService {
     }
 
     const hash = await argon.hash(dto.password);
+
     try {
       const user = await this.prisma.user.create({
         data: {
@@ -37,18 +39,20 @@ export class AuthService {
           phoneCode: dto.phoneCode,
           phoneNumber: dto.phoneNumber,
           address: dto.address,
-          fin: dto.fin,
-          idSerial: dto.idSerial,
+          fin: dto.isForeignCitizen ? null : dto.fin,
+          idSerial: dto.isForeignCitizen ? null : dto.idSerial,
+          passportId: dto.isForeignCitizen ? dto.passportId : null,
         },
       });
-
-      return this.signToken(user.id, user.email, false);
+      return user;
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new ForbiddenException('Email already in use');
+        throw new ForbiddenException(
+          'Unique constraint failed on one of the fields',
+        );
       }
       throw error;
     }
@@ -199,7 +203,7 @@ export class AuthService {
         role: true,
         organization: true,
         position: true,
-        userJournal:true
+        userJournal: true
       },
     });
 
