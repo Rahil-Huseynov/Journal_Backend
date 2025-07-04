@@ -4,7 +4,7 @@ import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto } from './dto';
+import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, UpdateUserDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -16,11 +16,31 @@ export class AuthService {
 
 
   async userSignup(dto: RegisterAuthDto) {
+    // Email yoxlama
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
     if (existingUser) {
       throw new ForbiddenException('Email already in use');
+    }
+
+    // Passport ID yoxlama (xarici vətəndaş üçün)
+    if (dto.isForeignCitizen && dto.passportId) {
+      const existingPassport = await this.prisma.user.findUnique({
+        where: { passportId: dto.passportId },
+      });
+      if (existingPassport) {
+        throw new ForbiddenException('Passport ID already in use');
+      }
+    }
+
+    // PassportId boşdursa null et
+    if (dto.isForeignCitizen) {
+      if (!dto.passportId || dto.passportId.trim() === '') {
+        dto.passportId = null;
+      }
+    } else {
+      dto.passportId = null;
     }
 
     const hash = await argon.hash(dto.password);
@@ -41,7 +61,8 @@ export class AuthService {
           address: dto.address,
           fin: dto.isForeignCitizen ? null : dto.fin,
           idSerial: dto.isForeignCitizen ? null : dto.idSerial,
-          passportId: dto.isForeignCitizen ? dto.passportId : null,
+          passportId: dto.passportId,
+          isForeignCitizen: dto.isForeignCitizen,
         },
       });
       return user;
@@ -97,9 +118,18 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        fatherName: user.fatherName,
+        phoneCode: user.phoneCode,
+        phoneNumber: user.phoneNumber,
+        address: user.address,
+        fin: user.fin,
+        idSerial: user.idSerial,
+        passportId: user.passportId,
+        isForeignCitizen: user.isForeignCitizen,
         role: user.role,
         organization: user.organization,
         position: user.position,
+        createdAt: user.createdAt
       },
     };
   }
@@ -136,44 +166,39 @@ export class AuthService {
     });
   }
 
-  async putUser(userId: number, dto: Partial<LoginAuthDto>) {
-    const user = await this.prisma.user.findUnique({
+  async putUser(userId: number, dto: any) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new ForbiddenException('User not found');
+
+    const updateData: any = { ...dto };
+
+    if (updateData.passportId === '') {
+      updateData.passportId = null;
+    }
+    updateData.isForeignCitizen = updateData.isForeignCitizen === 'true' || updateData.isForeignCitizen === true;
+
+    const updatedUser = await this.prisma.user.update({
       where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        fin: true,
+        phoneCode: true,
+        phoneNumber: true,
+        organization: true,
+        position: true,
+        address: true,
+        idSerial: true,
+        passportId: true,
+        isForeignCitizen: true,
+        fatherName: true,
+      },
     });
 
-    if (!user) {
-      throw new ForbiddenException('User not found');
-    }
-    let updateData: any = {};
-
-    if (dto.email) {
-      updateData.email = dto.email;
-    }
-
-    if (dto.password) {
-      updateData.hash = await argon.hash(dto.password);
-    }
-
-    try {
-      const updateUser = await this.prisma.user.update({
-        where: { id: userId },
-        data: updateData,
-        select: {
-          id: true,
-          email: true,
-          hash: true,
-        },
-      });
-      return updateUser;
-    } catch (error) {
-      if (
-        error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new ForbiddenException('Email already in use');
-      }
-      throw error;
-    }
+    return updatedUser;
   }
 
   async deleteUser(userId: number) {
@@ -203,7 +228,16 @@ export class AuthService {
         role: true,
         organization: true,
         position: true,
-        userJournal: true
+        userJournal: true,
+        fatherName: true,
+        phoneCode: true,
+        phoneNumber: true,
+        address: true,
+        fin: true,
+        idSerial: true,
+        passportId: true,
+        isForeignCitizen: true,
+        createdAt: true,
       },
     });
 

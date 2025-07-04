@@ -70,5 +70,5 @@ export class RegisterAuthDto {
   @ValidateIf((o) => o.isForeignCitizen)
   @IsString()
   @IsNotEmpty()
-  passportId: string;
+  passportId?: string | null;
 }

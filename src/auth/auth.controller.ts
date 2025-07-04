@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Req, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
-import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto } from "./dto";
+import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, UpdateUserDto } from "./dto";
 import { AuthGuard } from "@nestjs/passport";
 
 @Controller('auth')
@@ -32,13 +32,20 @@ export class AuthController {
     getUsers() {
         return this.authService.getAllUsers();
     }
-
-    @Put("users/:id")
-    updateUser(
-        @Param("id", ParseIntPipe) id: number,
-        @Body() dto: Partial<LoginAuthDto>) {
-        return this.authService.putUser(id, dto)
+    
+    @UseGuards(AuthGuard('jwt'))
+    @Put('users/:id')
+    @UseInterceptors(AnyFilesInterceptor())
+    async updateUser(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req
+    ) {
+        return this.authService.putUser(id, req.body);
     }
+
+
+
+
 
     @Delete("users/:id")
     deleteUser(@Param("id", ParseIntPipe) id: number) {
