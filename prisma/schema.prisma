@@ -114,6 +114,9 @@ model UserJournal {
   description_az String?
   description_en String?
   description_ru String?
+  keywords_en    String?
+  keywords_az    String?
+  keywords_ru    String?
   file           String
   userId         Int
   user           User     @relation(fields: [userId], references: [id])

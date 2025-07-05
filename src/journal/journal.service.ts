@@ -20,6 +20,9 @@ export class JournalService {
         description_az: dto.description_az,
         description_en: dto.description_en,
         description_ru: dto.description_ru,
+        keywords_az: dto.keywords_az,
+        keywords_en: dto.keywords_en,
+        keywords_ru: dto.keywords_ru,
         status: dto.status,
         file: filePath,
         userId: userId,
@@ -36,11 +39,6 @@ export class JournalService {
     return journal;
   }
 
-
-
-
-
-
   async getUserJournals(userId: number) {
     return this.prisma.userJournal.findMany({
       where: { userId },
@@ -52,6 +50,9 @@ export class JournalService {
         description_az: true,
         description_en: true,
         description_ru: true,
+        keywords_az: true,
+        keywords_en: true,
+        keywords_ru: true,
         file: true,
         createdAt: true,
         approved: true,

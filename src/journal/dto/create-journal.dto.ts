@@ -24,7 +24,19 @@ export class CreateJournalDto {
   @IsString()
   @IsNotEmpty()
   description_ru: string;
-
+ 
+  @IsString()
+  @IsNotEmpty()
+  keywords_en: string;
+ 
+  @IsString()
+  @IsNotEmpty()
+  keywords_az: string;
+ 
+  @IsString()
+  @IsNotEmpty()
+  keywords_ru: string;
+ 
   @IsString()
   status: string;
 
@@ -35,5 +47,5 @@ export class CreateJournalDto {
   subCategoryIds: number[];
 
   @IsOptional()
-  file?: string;  
+  file?: string;
 }
