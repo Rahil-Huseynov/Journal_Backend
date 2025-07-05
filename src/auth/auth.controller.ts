@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Req, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
-import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, UpdateUserDto } from "./dto";
+import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, UpdatePasswordDto, UpdateUserDto } from "./dto";
 import { AuthGuard } from "@nestjs/passport";
+import { JwtGuard } from "./guard";
 
 @Controller('auth')
 export class AuthController {
@@ -32,7 +33,7 @@ export class AuthController {
     getUsers() {
         return this.authService.getAllUsers();
     }
-    
+
     @UseGuards(AuthGuard('jwt'))
     @Put('users/:id')
     @UseInterceptors(AnyFilesInterceptor())
@@ -44,6 +45,15 @@ export class AuthController {
     }
 
 
+
+    @UseGuards(JwtGuard)
+    @Patch('users/password')
+    @UseInterceptors(AnyFilesInterceptor())
+    async updatePassword(@Req() req) {
+        const userId = req.user.sub;
+        const { currentPassword, newPassword } = req.body;
+        return this.authService.updatePassword(userId, currentPassword, newPassword);
+    }
 
 
 

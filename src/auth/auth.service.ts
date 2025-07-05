@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -194,7 +194,7 @@ export class AuthService {
         passportId: true,
         isForeignCitizen: true,
         fatherName: true,
-        citizenship:true,
+        citizenship: true,
       },
     });
 
@@ -303,5 +303,26 @@ export class AuthService {
       throw error;
     }
   }
+
+async updatePassword(userId: number, currentPassword: string, newPassword: string) {
+  const user = await this.prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new UnauthorizedException('User not found');
+  }
+
+  const isPasswordValid = await argon.verify(user.hash, currentPassword);
+  if (!isPasswordValid) {
+    throw new BadRequestException('Hazırki şifrə düzgün deyil');
+  }
+
+  const newHashedPassword = await argon.hash(newPassword);
+
+  await this.prisma.user.update({
+    where: { id: userId },
+    data: { hash: newHashedPassword },
+  });
+
+  return { message: 'Şifrə uğurla yeniləndi' };
+}
 
 }
