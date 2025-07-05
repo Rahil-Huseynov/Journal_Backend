@@ -1,10 +1,12 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, UpdateUserDto } from './dto';
+import { randomBytes } from 'crypto';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class AuthService {
@@ -303,26 +305,106 @@ export class AuthService {
       throw error;
     }
   }
+  async forgotPassword(email: string, locale: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new ForbiddenException('İstifadəçi tapılmadı');
 
-async updatePassword(userId: number, currentPassword: string, newPassword: string) {
-  const user = await this.prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    throw new UnauthorizedException('User not found');
+    const token = randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
+    await this.prisma.passwordResetToken.create({
+      data: {
+        token,
+        expires,
+        user: { connect: { id: user.id } },
+      },
+    });
+
+    const baseUrl = this.config.get('FRONTEND_URL');
+    const formattedLocale = locale.startsWith('/') ? locale : `/${locale}`;
+    const resetUrl = `${baseUrl}${formattedLocale}/auth/reset-password?token=${token}`;
+
+    await this.sendResetEmail(user.email, resetUrl);
+
+    return { message: 'Şifrə sıfırlama linki e-poçt ünvanınıza göndərildi.' };
+  }
+  async resetPassword(token: string, newPassword: string) {
+    const tokenRecord = await this.prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!tokenRecord) throw new BadRequestException('Yanlış və ya istifadə olunmuş token.');
+    if (tokenRecord.expires < new Date()) {
+      await this.prisma.passwordResetToken.delete({ where: { token } });
+      throw new BadRequestException('Token vaxtı keçib.');
+    }
+
+    const hashedPassword = await argon.hash(newPassword);
+
+    await this.prisma.user.update({
+      where: { id: tokenRecord.userId },
+      data: { hash: hashedPassword },
+    });
+
+    await this.prisma.passwordResetToken.delete({ where: { token } });
+
+    return { message: 'Şifrə uğurla dəyişdirildi.' };
   }
 
-  const isPasswordValid = await argon.verify(user.hash, currentPassword);
-  if (!isPasswordValid) {
-    throw new BadRequestException('Hazırki şifrə düzgün deyil');
+  private async sendResetEmail(to: string, resetUrl: string) {
+    const transporter = nodemailer.createTransport({
+      host: this.config.get('SMTP_HOST'),
+      port: +this.config.get('SMTP_PORT'),
+      secure: +this.config.get('SMTP_PORT') === 465,
+      auth: {
+        user: this.config.get('SMTP_USER'),
+        pass: this.config.get('SMTP_PASS'),
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"ScientificWorks" <${this.config.get('SMTP_USER')}>`,
+      to,
+      subject: 'Şifrə Sıfırlama',
+      html: `
+        <h3>Şifrə sıfırlama linki</h3>
+        <p>Aşağıdakı linkə klikləyərək yeni şifrə təyin edə bilərsiniz:</p>
+        <a href="${resetUrl}">${resetUrl}</a>
+        <p>Link 1 saat etibarlıdır.</p>
+      `,
+    });
+  }
+  async checkToken(token: string) {
+    const tokenRecord = await this.prisma.passwordResetToken.findUnique({
+      where: { token },
+    });
+
+    if (!tokenRecord) return false;
+    if (tokenRecord.expires < new Date()) {
+      await this.prisma.passwordResetToken.delete({ where: { token } });
+      return false;
+    }
+    return true;
   }
 
-  const newHashedPassword = await argon.hash(newPassword);
+  async updatePassword(userId: number, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new ForbiddenException('İstifadəçi tapılmadı');
+    }
+    const isPasswordCorrect = await argon.verify(user.hash, currentPassword);
+    if (!isPasswordCorrect) {
+      throw new ForbiddenException('Cari şifrə yanlışdır');
+    }
+    const newHashedPassword = await argon.hash(newPassword);
 
-  await this.prisma.user.update({
-    where: { id: userId },
-    data: { hash: newHashedPassword },
-  });
-
-  return { message: 'Şifrə uğurla yeniləndi' };
-}
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { hash: newHashedPassword },
+    });
+    return { message: 'Şifrə uğurla yeniləndi' };
+  }
 
 }

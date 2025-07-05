@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
@@ -22,31 +22,33 @@ model Admin {
   email     String   @unique
   hash      String
   role      String
-  createdAt DateTime @default(now())    
-  updatedAt    DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
-  hash         String
-  firstName    String?
-  lastName     String?
-  fatherName   String?
-  role         String?
-  organization String?
-  position     String?
-  phoneCode    String?
-  phoneNumber  String?
-  address      String?
-  fin          String?       @unique
-  idSerial     String?       @unique
-  passportId   String?       @unique
-  isForeignCitizen Boolean @default(false)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  userJournal  UserJournal[]
-  citizenship  String?
+  id                  Int                  @id @default(autoincrement())
+  email               String               @unique
+  hash                String
+  firstName           String?
+  lastName            String?
+  fatherName          String?
+  role                String?
+  organization        String?
+  position            String?
+  phoneCode           String?
+  phoneNumber         String?
+  address             String?
+  fin                 String?              @unique
+  idSerial            String?              @unique
+  passportId          String?              @unique
+  isForeignCitizen    Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  userJournal         UserJournal[]
+  citizenship         String?
+  passwordResetTokens PasswordResetToken[]
+
   @@map("users")
 }
 
@@ -67,8 +69,8 @@ model AllJournal {
 }
 
 model Category {
-  id             Int           @id @default(autoincrement())
-  createdAt      DateTime      @default(now())
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
   title_az       String?
   title_en       String?
   title_ru       String?
@@ -77,14 +79,14 @@ model Category {
   description_ru String?
   image          String
 
-  subCategories  SubCategory[]          
-  userJournal    UserJournal[] @relation("JournalCategories")
+  subCategories SubCategory[]
+  userJournal   UserJournal[] @relation("JournalCategories")
 
   @@map("category")
 }
 
 model SubCategory {
-  id             Int      @id @default(autoincrement())
+  id             Int     @id @default(autoincrement())
   title_az       String?
   title_en       String?
   title_ru       String?
@@ -94,10 +96,10 @@ model SubCategory {
   file           String
   image          String
 
-  categoryId     Int
-  category       Category @relation(fields: [categoryId], references: [id])
-  
-  journals       UserJournal[] @relation("JournalSubcategories") 
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  journals UserJournal[] @relation("JournalSubcategories")
 
   @@map("subcategory")
 }
@@ -118,9 +120,16 @@ model UserJournal {
   approved       Boolean  @default(false)
   status         String?
 
-  category       Category[]    @relation("JournalCategories")   
-  subCategories  SubCategory[] @relation("JournalSubcategories")
+  category      Category[]    @relation("JournalCategories")
+  subCategories SubCategory[] @relation("JournalSubcategories")
 
   @@map("userJournal")
 }
 
+model PasswordResetToken {
+  token     String   @id
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  expires   DateTime
+  createdAt DateTime @default(now())
+}

@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Headers, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Put, Query, Req, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
-import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, UpdatePasswordDto, UpdateUserDto } from "./dto";
+import { ForgotPasswordDto, LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, ResetPasswordDto, UpdateUserDto } from "./dto";
 import { AuthGuard } from "@nestjs/passport";
 import { JwtGuard } from "./guard";
 
@@ -44,17 +44,26 @@ export class AuthController {
         return this.authService.putUser(id, req.body);
     }
 
-
-
-    @UseGuards(JwtGuard)
-    @Patch('users/password')
-    @UseInterceptors(AnyFilesInterceptor())
-    async updatePassword(@Req() req) {
-        const userId = req.user.sub;
-        const { currentPassword, newPassword } = req.body;
-        return this.authService.updatePassword(userId, currentPassword, newPassword);
+    @Post('forgot-password')
+    forgotPassword(
+        @Body() dto: ForgotPasswordDto,
+        @Headers('accept-language') rawLocale: string
+    ) {
+        const locale = rawLocale ? rawLocale.split(',')[0].split('-')[0] : 'az';
+        return this.authService.forgotPassword(dto.email, locale);
     }
 
+
+    @Post('reset-password')
+    async resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.authService.resetPassword(dto.token, dto.newPassword);
+    }
+
+    @Get('check-token')
+    async checkToken(@Query('token') token: string) {
+        const valid = await this.authService.checkToken(token);
+        return { valid };
+    }
 
 
     @Delete("users/:id")
@@ -74,6 +83,15 @@ export class AuthController {
         }
 
         return this.authService.getUserById(req.user.id);
+    }
+    @UseGuards(JwtGuard)
+    @Patch('users/password')
+    @UseInterceptors(AnyFilesInterceptor())
+    async updatePassword(@Req() req) {
+        const userId = req.user.sub;
+        const currentPassword = req.body['currentPassword'];
+        const newPassword = req.body['newPassword'];
+        return this.authService.updatePassword(userId, currentPassword, newPassword);
     }
 
 }
