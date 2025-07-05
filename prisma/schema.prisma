@@ -46,7 +46,7 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   userJournal  UserJournal[]
-
+  citizenship  String?
   @@map("users")
 }
 

@@ -71,4 +71,8 @@ export class RegisterAuthDto {
   @IsString()
   @IsNotEmpty()
   passportId?: string | null;
+
+  @IsString()
+  @IsNotEmpty()
+  citizenship?: string;
 }

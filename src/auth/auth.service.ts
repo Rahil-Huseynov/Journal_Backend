@@ -60,6 +60,7 @@ export class AuthService {
           idSerial: dto.isForeignCitizen ? null : dto.idSerial,
           passportId: dto.passportId,
           isForeignCitizen: dto.isForeignCitizen,
+          citizenship: dto.citizenship,
         },
       });
       return user;
@@ -126,6 +127,7 @@ export class AuthService {
         role: user.role,
         organization: user.organization,
         position: user.position,
+        citizenship: user.citizenship,
         createdAt: user.createdAt
       },
     };
@@ -192,6 +194,7 @@ export class AuthService {
         passportId: true,
         isForeignCitizen: true,
         fatherName: true,
+        citizenship:true,
       },
     });
 
@@ -234,6 +237,7 @@ export class AuthService {
         idSerial: true,
         passportId: true,
         isForeignCitizen: true,
+        citizenship: true,
         createdAt: true,
       },
     });
