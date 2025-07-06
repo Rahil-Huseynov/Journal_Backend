@@ -1,10 +1,24 @@
 import { Module } from '@nestjs/common';
-import { SubCategoryService } from './subcategory.service';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { SubCategoryController } from './subcategory.controller';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { SubCategoryService } from './subcategory.service';
 
 @Module({
+  imports: [
+    MulterModule.register({
+      storage: diskStorage({
+        destination: './uploads/subcategory',
+        filename: (_, file, cb) => {
+          const name = `${Date.now()}${extname(file.originalname)}`;
+          cb(null, name);
+        },
+      }),
+    }),
+  ],
   controllers: [SubCategoryController],
-  providers: [SubCategoryService, PrismaService],
+  providers: [SubCategoryService],
+
 })
-export class SubCategoryModule {}
+export class SubCategoryModule { }

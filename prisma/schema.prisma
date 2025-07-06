@@ -94,10 +94,9 @@ model SubCategory {
   description_en String?
   description_ru String?
   file           String
-  image          String
 
   categoryId Int
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   journals UserJournal[] @relation("JournalSubcategories")
 
