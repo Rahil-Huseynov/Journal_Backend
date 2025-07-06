@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, UpdateUserDto } from './dto';
 import { randomBytes } from 'crypto';
 import * as nodemailer from 'nodemailer';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class AuthService {
@@ -166,6 +167,80 @@ export class AuthService {
       },
     });
   }
+  async getAllAdmins(page = 1, limit = 10, search = "") {
+    const skip = (page - 1) * limit;
+
+    const where = search
+      ? {
+        OR: [
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+        ] as Prisma.AdminWhereInput[],
+      }
+      : {};
+
+    const [admins, total] = await Promise.all([
+      this.prisma.admin.findMany({
+        skip,
+        take: limit,
+        where,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true,
+        },
+      }),
+      this.prisma.admin.count({ where }),
+    ]);
+
+    return {
+      users: admins,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async updateAdmin(id: number, dto: Partial<RegisterAdminAuthDto>) {
+    const admin = await this.prisma.admin.findUnique({ where: { id } });
+    if (!admin) throw new ForbiddenException('Admin not found');
+
+    const updateData: any = { ...dto };
+    if (dto.password) {
+      updateData.hash = await argon.hash(dto.password);
+      delete updateData.password;
+    }
+
+    try {
+      const updatedAdmin = await this.prisma.admin.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true,
+        },
+      });
+      return updatedAdmin;
+    } catch (error) {
+      throw error;
+    }
+  }
+  async deleteAdmin(id: number) {
+    const admin = await this.prisma.admin.findUnique({ where: { id } });
+    if (!admin) {
+      throw new ForbiddenException("Admin tapılmadı");
+    }
+
+    await this.prisma.admin.delete({
+      where: { id },
+    });
+
+    return { message: "Admin uğurla silindi" };
+  }
 
   async putUser(userId: number, dto: any) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -271,14 +346,13 @@ export class AuthService {
   }
 
 
-
   async adminSignup(dto: RegisterAdminAuthDto) {
     const existingAdmin = await this.prisma.admin.findUnique({
       where: { email: dto.email },
     });
 
     if (existingAdmin) {
-      throw new ForbiddenException('Email already in use');
+      throw new ForbiddenException("Email already in use");
     }
 
     const hash = await argon.hash(dto.password);
@@ -290,21 +364,26 @@ export class AuthService {
           firstName: dto.firstName,
           lastName: dto.lastName,
           hash,
-          role: dto.role
+          role: dto.role,
         },
       });
 
-      return this.signToken(admin.id, admin.email, true);
+      return {
+        message: "Admin created successfully",
+        adminId: admin.id,
+      };
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === "P2002"
       ) {
-        throw new ForbiddenException('Email already in use');
+        throw new ForbiddenException("Email already in use");
       }
       throw error;
     }
   }
+
+
   async forgotPassword(email: string, locale: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new ForbiddenException('İstifadəçi tapılmadı');

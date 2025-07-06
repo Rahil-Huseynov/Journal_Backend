@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Headers, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Put, Query, Req, UseGuards, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Headers, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Put, Query, Req, UploadedFiles, UseGuards, UseInterceptors, ValidationPipe } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
 import { ForgotPasswordDto, LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, ResetPasswordDto, UpdateUserDto } from "./dto";
@@ -15,12 +15,15 @@ export class AuthController {
         return this.authService.userSignup(dto);
     }
 
+
     @UseInterceptors(AnyFilesInterceptor())
     @Post('admin/signup')
-    adminSignup(@Body() dto: RegisterAdminAuthDto) {
+    async adminSignup(
+        @Body(new ValidationPipe({ transform: true })) dto: RegisterAdminAuthDto,
+        @UploadedFiles() files: Express.Multer.File[],
+    ) {
         return this.authService.adminSignup(dto);
     }
-
 
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(AnyFilesInterceptor())
@@ -32,6 +35,30 @@ export class AuthController {
     @Get('users')
     getUsers() {
         return this.authService.getAllUsers();
+    }
+
+    @Get('admins')
+    async getAdmins(
+        @Query('page') page = '1',
+        @Query('limit') limit = '10',
+        @Query('search') search = ''
+    ) {
+        const pageNumber = parseInt(page, 10) || 1;
+        const limitNumber = parseInt(limit, 10) || 10;
+        return this.authService.getAllAdmins(pageNumber, limitNumber, search);
+    }
+
+    @Put('admin/:id')
+    async updateAdmin(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: Partial<RegisterAdminAuthDto & { id: number }>,
+    ) {
+        return this.authService.updateAdmin(id, dto);
+    }
+
+    @Delete('admin/:id')
+    async deleteAdmin(@Param('id', ParseIntPipe) id: number) {
+        return this.authService.deleteAdmin(id);
     }
 
     @UseGuards(AuthGuard('jwt'))

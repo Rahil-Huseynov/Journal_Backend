@@ -1,25 +1,26 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+
+export enum UserRole {
+  SUPERADMIN = 'superadmin',
+  ADMIN = 'admin',
+}
 
 export class RegisterAdminAuthDto {
-    @IsEmail()
-    @IsNotEmpty()
-    email: string;
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @MinLength(6)
-    password: string
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
 
-    @IsString()
-    @IsNotEmpty()
-    role:string
+  @IsEmail()
+  email: string;
 
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 
-    @IsString()
-    @IsNotEmpty()
-    firstName?: string;
-
-    @IsString()
-    @IsNotEmpty()
-    lastName?: string;
+  @IsEnum(UserRole)
+  role: UserRole;
 }
