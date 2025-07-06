@@ -21,17 +21,47 @@ export class CategoryService {
   }
 
   async create(dto: CreateCategoryDto) {
+    let imagePath = '';
+    if (dto.image) {
+      imagePath = `/uploads/categories/${dto.image}`;
+    }
+
     return this.prisma.category.create({
-      data: dto,
+      data: {
+        title_az: dto.title_az,
+        title_en: dto.title_en,
+        title_ru: dto.title_ru,
+        description_az: dto.description_az,
+        description_en: dto.description_en,
+        description_ru: dto.description_ru,
+        image: imagePath, 
+      },
     });
   }
 
   async update(id: number, dto: UpdateCategoryDto) {
+    const dataToUpdate: any = {
+      title_az: dto.title_az,
+      title_en: dto.title_en,
+      title_ru: dto.title_ru,
+      description_az: dto.description_az,
+      description_en: dto.description_en,
+      description_ru: dto.description_ru,
+    };
+
+    if (dto.image !== undefined && dto.image !== '') {
+      dataToUpdate.image = `/uploads/categories/${dto.image}`;
+    }
+    else if (dto.image === '') {
+      dataToUpdate.image = null;
+    }
+
     return this.prisma.category.update({
       where: { id },
-      data: dto,
+      data: dataToUpdate,
     });
   }
+
 
   async delete(id: number) {
     const category = await this.prisma.category.findUnique({ where: { id } });

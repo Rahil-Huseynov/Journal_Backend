@@ -15,10 +15,17 @@ export class CreateCategoryDto {
 
   @IsOptional()
   @IsString()
-  description?: string;
+  description_az?: string;
 
   @IsOptional()
   @IsString()
-  image: string;
-}
+  description_en?: string;
 
+  @IsOptional()
+  @IsString()
+  description_ru?: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string; 
+}

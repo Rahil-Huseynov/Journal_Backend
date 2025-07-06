@@ -8,14 +8,18 @@ import {
   Body,
   ParseIntPipe,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto';
 import { AdminGuard } from 'src/journal/guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Get()
   getAll() {
@@ -27,19 +31,38 @@ export class CategoryController {
     return this.categoryService.getById(id);
   }
 
-  @UseGuards(AdminGuard)
-  @Post()
-  create(@Body() dto: CreateCategoryDto) {
-    return this.categoryService.create(dto);
-  }
 
-  @UseGuards(AdminGuard)
+  @Post('add')
+  @UseInterceptors(FileInterceptor('image'))
+  async create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: CreateCategoryDto,
+  ) {
+    const dataToCreate: CreateCategoryDto = {
+      ...dto,
+      image: file?.filename ?? undefined,
+    };
+
+    return this.categoryService.create(dataToCreate);
+  }
+  
   @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateCategoryDto) {
+  @UseInterceptors(FileInterceptor('image'))
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateCategoryDto,
+    @UploadedFile() image?: Express.Multer.File,
+  ) {
+    if (image) {
+      dto.image = image.filename;
+    } else {
+      delete dto.image;
+    }
+
     return this.categoryService.update(id, dto);
   }
 
-  @UseGuards(AdminGuard)
+
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.categoryService.delete(id);
