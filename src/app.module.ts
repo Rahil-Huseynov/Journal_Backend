@@ -17,7 +17,6 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     rootPath: join(__dirname, '..', 'uploads'),
     serveRoot: '/uploads',
   }),
-
   ],
 })
 export class AppModule {

@@ -21,11 +21,6 @@ export class CategoryService {
   }
 
   async create(dto: CreateCategoryDto) {
-    let imagePath = '';
-    if (dto.image) {
-      imagePath = `/uploads/categories/${dto.image}`;
-    }
-
     return this.prisma.category.create({
       data: {
         title_az: dto.title_az,
@@ -34,7 +29,7 @@ export class CategoryService {
         description_az: dto.description_az,
         description_en: dto.description_en,
         description_ru: dto.description_ru,
-        image: imagePath, 
+        image: dto.image || "",
       },
     });
   }
@@ -50,7 +45,7 @@ export class CategoryService {
     };
 
     if (dto.image !== undefined && dto.image !== '') {
-      dataToUpdate.image = `/uploads/categories/${dto.image}`;
+      dataToUpdate.image = `${dto.image}`;
     }
     else if (dto.image === '') {
       dataToUpdate.image = null;
@@ -61,8 +56,6 @@ export class CategoryService {
       data: dataToUpdate,
     });
   }
-
-
   async delete(id: number) {
     const category = await this.prisma.category.findUnique({ where: { id } });
     if (!category) throw new NotFoundException('Category not found');

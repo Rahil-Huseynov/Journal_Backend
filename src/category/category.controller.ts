@@ -38,13 +38,12 @@ export class CategoryController {
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: CreateCategoryDto,
   ) {
-    const dataToCreate: CreateCategoryDto = {
-      ...dto,
-      image: file?.filename ?? undefined,
-    };
-
-    return this.categoryService.create(dataToCreate);
+    if (file) {
+      dto.image = file.filename;
+    }
+    return this.categoryService.create(dto);
   }
+
   
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
@@ -58,7 +57,6 @@ export class CategoryController {
     } else {
       delete dto.image;
     }
-
     return this.categoryService.update(id, dto);
   }
 
