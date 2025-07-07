@@ -27,7 +27,7 @@ export class SubCategoryService {
         description_az: dto.description_az,
         description_en: dto.description_en,
         description_ru: dto.description_ru,
-        count: 0,  
+        count: 0,
         category: {
           connect: { id: dto.categoryId },
         },
@@ -56,10 +56,10 @@ export class SubCategoryService {
     });
   }
 
-  async deleteCategory(id: number) {
-    const category = await this.prisma.category.findUnique({ where: { id } });
-    if (!category) throw new NotFoundException('Category not found');
-    await this.prisma.subCategory.deleteMany({ where: { categoryId: id } });
-    return this.prisma.category.delete({ where: { id } });
+  async deleteSubCategory(id: number) {
+    const exists = await this.prisma.subCategory.findUnique({ where: { id } });
+    if (!exists) throw new NotFoundException('SubCategory not found');
+    return this.prisma.subCategory.delete({ where: { id } });
   }
+
 }

@@ -45,6 +45,7 @@ export class SubCategoryController {
 
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number) {
-    return this.subCategoryService.deleteCategory(id);
+    return this.subCategoryService.deleteSubCategory(id);
   }
+
 }

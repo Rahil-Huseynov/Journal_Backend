@@ -10,6 +10,7 @@ import { CategoryModule } from './category/category.module';
 import { SubCategoryModule } from './subcategory/subcategory.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { GlobalsubcategoryModule } from './globalsubcategory/globalsubcategory.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule,
@@ -17,6 +18,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     rootPath: join(__dirname, '..', 'uploads'),
     serveRoot: '/uploads',
   }),
+  GlobalsubcategoryModule,
   ],
 })
 export class AppModule {
