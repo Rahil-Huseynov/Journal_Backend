@@ -33,8 +33,13 @@ export class AuthController {
     }
 
     @Get('users')
-    getUsers() {
-        return this.authService.getAllUsers();
+    getUsers(
+        @Query('page') page: string,
+        @Query('limit') limit: string,
+    ) {
+        const pageNumber = parseInt(page) || 1
+        const pageSize = parseInt(limit) || 10
+        return this.authService.getAllUsers(pageNumber, pageSize)
     }
 
     @Get('admins')

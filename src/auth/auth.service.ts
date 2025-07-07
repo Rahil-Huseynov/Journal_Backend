@@ -54,6 +54,7 @@ export class AuthService {
           lastName: dto.lastName,
           fatherName: dto.fatherName,
           role: dto.role,
+          usertype: dto.usertype,
           organization: dto.organization,
           position: dto.position,
           phoneCode: dto.phoneCode,
@@ -120,6 +121,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         fatherName: user.fatherName,
+        usertype: user.usertype,
         phoneCode: user.phoneCode,
         phoneNumber: user.phoneNumber,
         address: user.address,
@@ -157,16 +159,51 @@ export class AuthService {
       access_token: token,
     };
   }
+  async getAllUsers(page = 1, limit = 10) {
+    const skip = (page - 1) * limit
 
-  async getAllUsers() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        createdAt: true,
-      },
-    });
+    const [users, totalCount] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          email: true,
+          createdAt: true,
+          fatherName: true,
+          firstName: true,
+          address: true,
+          citizenship: true,
+          phoneCode: true,
+          idSerial: true,
+          fin: true,
+          organization: true,
+          position: true,
+          passportId: true,
+          lastName: true,
+          phoneNumber: true,
+          role: true,
+          usertype: true,
+          userJournal: true,
+          isForeignCitizen: true,
+        },
+      }),
+      this.prisma.user.count(),
+    ])
+
+    const totalPages = Math.ceil(totalCount / limit)
+
+    return {
+      users,
+      totalCount,
+      totalPages,
+      currentPage: page,
+    }
   }
+
   async getAllAdmins(page = 1, limit = 10, search = "") {
     const skip = (page - 1) * limit;
 
@@ -205,7 +242,6 @@ export class AuthService {
   async updateAdmin(id: number, dto: Partial<RegisterAdminAuthDto>) {
     const admin = await this.prisma.admin.findUnique({ where: { id } });
     if (!admin) throw new ForbiddenException('Admin not found');
-
     const updateData: any = { ...dto };
     if (dto.password) {
       updateData.hash = await argon.hash(dto.password);
@@ -224,11 +260,13 @@ export class AuthService {
           role: true,
         },
       });
+
       return updatedAdmin;
     } catch (error) {
       throw error;
     }
   }
+
   async deleteAdmin(id: number) {
     const admin = await this.prisma.admin.findUnique({ where: { id } });
     if (!admin) {
@@ -269,6 +307,7 @@ export class AuthService {
         address: true,
         idSerial: true,
         passportId: true,
+        usertype: true,
         isForeignCitizen: true,
         fatherName: true,
         citizenship: true,
@@ -312,6 +351,7 @@ export class AuthService {
         address: true,
         fin: true,
         idSerial: true,
+        usertype: true,
         passportId: true,
         isForeignCitizen: true,
         citizenship: true,
@@ -446,10 +486,10 @@ export class AuthService {
       to,
       subject: 'Şifrə Sıfırlama',
       html: `
-        <h3>Şifrə sıfırlama linki</h3>
-        <p>Aşağıdakı linkə klikləyərək yeni şifrə təyin edə bilərsiniz:</p>
-        <a href="${resetUrl}">${resetUrl}</a>
-        <p>Link 1 saat etibarlıdır.</p>
+        <h2>Şifrə sıfırlama linki</h2>
+        <p style="margin-bottom: 2rem;">Aşağıdakı linkə klikləyərək yeni şifrə təyin edə bilərsiniz:</p>
+        <a style="background-color: blue; text-decoration: none; color: white; margin: 1rem 0; padding: 1rem; border-radius: 20px; font-weight: 800;" href="${resetUrl}">Şifrəni dəyişmək üçün bura klik edin</a>
+        <p style="margin-top: 2rem; font-weight: 800;">QEYD: Link 1 saat etibarlıdır.</p>
       `,
     });
   }

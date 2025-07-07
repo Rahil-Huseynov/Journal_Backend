@@ -35,6 +35,10 @@ export class RegisterAuthDto {
 
   @IsString()
   @IsNotEmpty()
+  usertype?: string;
+
+  @IsString()
+  @IsNotEmpty()
   organization?: string;
 
   @IsString()
