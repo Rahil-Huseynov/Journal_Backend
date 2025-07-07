@@ -80,10 +80,34 @@ model Category {
   description_ru String?
   image          String
 
+
+  globalSubCategory GlobalSubCategory[]
   subCategories SubCategory[]
   userJournal   UserJournal[] @relation("JournalCategories")
 
   @@map("category")
+}
+
+model GlobalSubCategory {
+  id             Int     @id @default(autoincrement())
+
+  title_az       String?
+  title_en       String?
+  title_ru       String?
+  description_az String?
+  description_en String?
+  description_ru String?
+  file           String
+
+  categoryId     Int
+  category       Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  subCategoryId  Int
+  subCategory    SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+
+  userJournals   UserJournal[] @relation("JournalGlobalSubcategories")
+
+  @@map("global_subcategory")
 }
 
 model SubCategory {
@@ -94,12 +118,14 @@ model SubCategory {
   description_az String?
   description_en String?
   description_ru String?
-  file           String
+  count          Int @default(0) 
+  EndDate        String?
 
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  journals UserJournal[] @relation("JournalSubcategories")
+  journals           UserJournal[]       @relation("JournalSubcategories")
+  globalSubCategories GlobalSubCategory[] 
 
   @@map("subcategory")
 }
@@ -123,8 +149,10 @@ model UserJournal {
   approved       Boolean  @default(false)
   status         String?
 
+
   category      Category[]    @relation("JournalCategories")
   subCategories SubCategory[] @relation("JournalSubcategories")
+  globalSubCategories GlobalSubCategory[] @relation("JournalGlobalSubcategories")
 
   @@map("userJournal")
 }
