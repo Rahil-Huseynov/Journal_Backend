@@ -24,19 +24,22 @@ export class CreateJournalDto {
   @IsString()
   @IsNotEmpty()
   description_ru: string;
- 
+
   @IsString()
   @IsNotEmpty()
   keywords_en: string;
- 
+
   @IsString()
   @IsNotEmpty()
   keywords_az: string;
- 
+
   @IsString()
   @IsNotEmpty()
   keywords_ru: string;
- 
+  
+  @IsString()
+  message: string
+
   @IsString()
   status: string;
 

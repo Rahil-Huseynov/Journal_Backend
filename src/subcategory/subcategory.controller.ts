@@ -24,8 +24,10 @@ export class SubCategoryController {
 
   @Get(':id')
   getById(@Param('id', ParseIntPipe) id: number) {
-    return this.subCategoryService.getById(id);
+    return this.subCategoryService.getByIdWithRelations(id);
   }
+
+
 
   @Post('add')
   @UseInterceptors(AnyFilesInterceptor())

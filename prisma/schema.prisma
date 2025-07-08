@@ -97,7 +97,8 @@ model GlobalSubCategory {
   description_en String?
   description_ru String?
   file           String
-
+  count          Int @default(0)
+  requireCount   Int @default(0)
   categoryId     Int
   category       Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
@@ -117,14 +118,16 @@ model SubCategory {
   description_az String?
   description_en String?
   description_ru String?
-  count          Int @default(0) 
+  count          Int     @default(0)
   EndDate        String?
+  status         String?  
+  requireCount   Int     @default(0)
 
   categoryId Int
-  category   Category @relation(fields: [categoryId], references: [id])  // burada onDelete yoxdur
+  category   Category @relation(fields: [categoryId], references: [id])
 
   journals           UserJournal[]       @relation("JournalSubcategories")
-  globalSubCategories GlobalSubCategory[] 
+  globalSubCategories GlobalSubCategory[]
 
   @@map("subcategory")
 }
@@ -146,8 +149,8 @@ model UserJournal {
   userId         Int
   user           User     @relation(fields: [userId], references: [id])
   approved       Boolean  @default(false)
-  status         String?
-
+  status         String?  
+  message        String?
 
   category      Category[]    @relation("JournalCategories")
   subCategories SubCategory[] @relation("JournalSubcategories")

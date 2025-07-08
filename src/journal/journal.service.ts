@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateJournalDto } from './dto';
+import { SubCategoryService } from 'src/subcategory/subcategory.service';
 
 @Injectable()
 export class JournalService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private subCategoryService: SubCategoryService, // inject edildi
+  ) { }
 
   async createJournal(dto: CreateJournalDto, userId: number) {
     let filePath = '';
@@ -24,20 +28,94 @@ export class JournalService {
         keywords_en: dto.keywords_en,
         keywords_ru: dto.keywords_ru,
         status: dto.status,
+        message: dto.message,
         file: filePath,
         userId: userId,
+        approved: false,
         category: {
           connect: dto.categoryIds.map((id) => ({ id })),
         },
         subCategories: {
           connect: dto.subCategoryIds.map((id) => ({ id })),
         },
-        approved: false,
+      },
+      include: {
+        subCategories: true,
       },
     });
 
+    if (dto.status === 'finished') {
+      for (const sub of journal.subCategories) {
+        await this.subCategoryService.updateCountAndStatus(sub.id);
+      }
+    }
+
     return journal;
   }
+
+  
+
+  async updateUserJournal(journalId: number, dto: CreateJournalDto & { file?: string }) {
+    const journal = await this.prisma.userJournal.findUnique({
+      where: { id: journalId },
+      include: { subCategories: true },
+    });
+
+    if (!journal) throw new NotFoundException('Journal not found');
+
+    const updated = await this.prisma.userJournal.update({
+      where: { id: journalId },
+      data: {
+        title_az: dto.title_az,
+        title_en: dto.title_en,
+        title_ru: dto.title_ru,
+        description_az: dto.description_az,
+        description_en: dto.description_en,
+        description_ru: dto.description_ru,
+        message: dto.message,
+        file: dto.file ?? journal.file,
+        status: dto.status ?? journal.status,
+      },
+    });
+
+    for (const sub of journal.subCategories) {
+      await this.subCategoryService.updateCountAndStatus(sub.id);
+    }
+
+    return updated;
+  }
+
+
+
+
+  async updateJournalStatus(journalId: number, status: string, reason?: string) {
+    const journal = await this.prisma.userJournal.findUnique({
+      where: { id: journalId },
+      include: { subCategories: true },
+    });
+    if (!journal) throw new NotFoundException('Journal not found');
+
+    const updatedData: any = { status };
+
+    if (status === 'rejected' && reason) {
+      updatedData.message = reason;
+    }
+
+    const updatedJournal = await this.prisma.userJournal.update({
+      where: { id: journalId },
+      data: updatedData,
+    });
+
+    if (journal.status !== status) {
+      for (const sub of journal.subCategories) {
+        await this.subCategoryService.updateCountAndStatus(sub.id);
+      }
+    }
+
+    return updatedJournal;
+  }
+
+
 
   async getUserJournals(userId: number) {
     return this.prisma.userJournal.findMany({
@@ -53,6 +131,7 @@ export class JournalService {
         keywords_az: true,
         keywords_en: true,
         keywords_ru: true,
+        message: true,
         file: true,
         createdAt: true,
         approved: true,
@@ -68,11 +147,10 @@ export class JournalService {
       include: { user: true },
     });
   }
-
   async approveJournal(journalId: number) {
     const journal = await this.prisma.userJournal.findUnique({
       where: { id: journalId },
-      include: { user: true },
+      include: { user: true, subCategories: true },
     });
 
     if (!journal) throw new NotFoundException('Journal not found');
@@ -95,9 +173,14 @@ export class JournalService {
       where: { id: journalId },
       data: {
         approved: true,
-        status: 'Təsdiqləndi',
+        status: 'approved',
       },
     });
+
+    for (const sub of journal.subCategories) {
+      await this.subCategoryService.updateCountAndStatus(sub.id);
+    }
+
 
     return { message: 'Journal approved and added to AllJournal' };
   }
@@ -105,6 +188,7 @@ export class JournalService {
   async rejectJournal(journalId: number) {
     const journal = await this.prisma.userJournal.findUnique({
       where: { id: journalId },
+      include: { subCategories: true },
     });
 
     if (!journal) throw new NotFoundException('Journal not found');
@@ -116,15 +200,21 @@ export class JournalService {
         status: 'Ləğv edildi',
       },
     });
+    for (const sub of journal.subCategories) {
+      await this.subCategoryService.updateCountAndStatus(sub.id);
+    }
 
     return { message: 'Journal has been rejected' };
   }
+
+
 
   async getAllApprovedJournals() {
     return this.prisma.allJournal.findMany({
       orderBy: { createdAt: 'desc' },
     });
   }
+
   async getAllJournals() {
     return this.prisma.userJournal.findMany({
       include: { user: true },
@@ -147,32 +237,5 @@ export class JournalService {
       where: { id: journalId },
     });
   }
-
-
-
-  async updateUserJournal(
-    journalId: number,
-    dto: CreateJournalDto & { file?: string },
-  ) {
-    const journal = await this.prisma.userJournal.findUnique({
-      where: { id: journalId },
-    });
-
-    if (!journal) throw new NotFoundException('Journal not found');
-
-    return this.prisma.userJournal.update({
-      where: { id: journalId },
-      data: {
-        title_az: dto.title_az,
-        title_en: dto.title_en,
-        title_ru: dto.title_ru,
-        description_az: dto.description_az,
-        description_en: dto.description_en,
-        description_ru: dto.description_ru,
-        file: dto.file ?? journal.file,
-      },
-    });
-  }
-
 
 }

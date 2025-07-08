@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Put, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Put, Delete, Patch } from '@nestjs/common';
 import { JournalService } from './journal.service';
 import { JwtGuard } from 'src/auth/guard';
 import { CreateJournalDto } from './dto';
@@ -57,6 +57,7 @@ export class JournalController {
             keywords_en: body.keywords_en,
             keywords_ru: body.keywords_ru,
             status: body.status,
+            message: body.message,
             categoryIds,
             subCategoryIds,
             file: file?.filename,
@@ -100,31 +101,16 @@ export class JournalController {
     getAllJournals() {
         return this.journalService.getAllJournals();
     }
-
-
-    // @Put('update/:id')
-    // @UseInterceptors(
-    //     FileInterceptor('file', {
-    //         storage: diskStorage({
-    //             destination: './uploads',
-    //             filename: (req, file, callback) => {
-    //                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    //                 const ext = extname(file.originalname);
-    //                 callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-    //             },
-    //         }),
-    //     }),
-    // )
-    // update(
-    //     @Param('id') id: string,
-    //     @Body() dto: CreateJournalDto,
-    //     @UploadedFile() file: Express.Multer.File,
-    // ) {
-    //     return this.journalService.updateUserJournal(+id, {
-    //         ...dto,
-    //         file: file?.filename, // File optional
-    //     });
-    // }
+    
+    @Patch('update-status/:id')
+    @UseGuards(AdminGuard)
+    async updateStatus(
+        @Param('id') id: string,
+        @Body() body: { status: string; reason?: string }
+    ) {
+        const { status, reason } = body;
+        return this.journalService.updateJournalStatus(+id, status, reason);
+    }
 
     @Delete('delete/:id')
     delete(@Param('id') id: string, @Req() req) {

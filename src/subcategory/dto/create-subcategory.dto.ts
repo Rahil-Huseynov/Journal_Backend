@@ -26,7 +26,16 @@ export class CreateSubCategoryDto {
   @IsString()
   description_ru?: string;
 
+  @IsOptional()
+  @IsString()
+  Status?: string;
+
   @Type(() => Number)
   @IsNumber()
-  categoryId: number;
+  categoryId?: number;
+
+
+  @Type(() => Number)
+  @IsNumber()
+  requireCount: number;
 }
