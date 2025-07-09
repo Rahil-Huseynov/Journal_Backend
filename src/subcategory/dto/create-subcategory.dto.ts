@@ -35,7 +35,8 @@ export class CreateSubCategoryDto {
   categoryId?: number;
 
 
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  requireCount: number;
+  requireCount?: number;
 }

@@ -35,10 +35,9 @@ export class SubCategoryController {
     return this.subCategoryService.create(body);
   }
 
-
-
-  @Put(':id')
-  update(
+  @Put('update/:id')
+  @UseInterceptors(AnyFilesInterceptor())
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateSubCategoryDto,
   ) {

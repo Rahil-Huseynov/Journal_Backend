@@ -35,9 +35,14 @@ export class SubCategoryService {
       },
     });
 
-    if (!subCategory) throw new NotFoundException('SubCategory tapılmadı');
+    if (!subCategory) {
+      throw new NotFoundException('SubCategory tapılmadı');
+    }
 
-    return subCategory;
+    return {
+      ...subCategory,
+      requireCount: subCategory.requireCount ?? 0,
+    };
   }
 
 
@@ -61,7 +66,26 @@ export class SubCategoryService {
   }
 
   async update(id: number, dto: UpdateSubCategoryDto) {
-    const exists = await this.prisma.subCategory.findUnique({ where: { id } });
+    type SubCategoryWithJournals = {
+      id: number;
+      title_az: string | null;
+      title_en: string | null;
+      title_ru: string | null;
+      description_az: string | null;
+      description_en: string | null;
+      description_ru: string | null;
+      categoryId: number;
+      requireCount: number | null;
+      count: number | null;
+      status: string | null;
+      journals: Array<{ id: number; status: string;[key: string]: any }>;
+    };
+
+    const exists = await this.prisma.subCategory.findUnique({
+      where: { id },
+      include: { journals: true },
+    }) as SubCategoryWithJournals;
+
     if (!exists) throw new NotFoundException('SubCategory not found');
 
     const data: any = {};
@@ -74,18 +98,24 @@ export class SubCategoryService {
     if (dto.description_en !== undefined) data.description_en = dto.description_en;
     if (dto.description_ru !== undefined) data.description_ru = dto.description_ru;
 
-    if (dto.requireCount !== undefined) data.requireCount = dto.requireCount;
+    if (dto.requireCount !== undefined) data.requireCount = Number(dto.requireCount);
     if (dto.Status !== undefined) data.status = dto.Status;
 
     if (dto.categoryId !== undefined) {
       data.category = { connect: { id: dto.categoryId } };
     }
-
-    return this.prisma.subCategory.update({
+    const updatedSubCategory = await this.prisma.subCategory.update({
       where: { id },
       data,
     });
+
+    for (const sub of exists.journals) {
+      await this.updateCountAndStatus(sub.id);
+    }
+    return updatedSubCategory;
   }
+
+
 
   async checkAndNotifyUserJournals(subCategoryId: number) {
     const subCategory = await this.prisma.subCategory.findUnique({
