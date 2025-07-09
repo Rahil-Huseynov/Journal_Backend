@@ -1,4 +1,5 @@
-import { IsString, IsOptional, IsArray, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsOptional, IsArray, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateJournalDto {
   @IsString()
@@ -36,7 +37,7 @@ export class CreateJournalDto {
   @IsString()
   @IsNotEmpty()
   keywords_ru: string;
-  
+
   @IsString()
   message: string
 
@@ -51,4 +52,6 @@ export class CreateJournalDto {
 
   @IsOptional()
   file?: string;
+
+
 }

@@ -53,18 +53,21 @@ export class JournalService {
     return journal;
   }
 
-  
 
-  async updateUserJournal(journalId: number, dto: CreateJournalDto & { file?: string }) {
+
+  async updateUserJournal(
+    journalId: number,
+    dto: CreateJournalDto & { file?: string; status?: string; message?: string }
+  ) {
     const journal = await this.prisma.userJournal.findUnique({
       where: { id: journalId },
-      include: { subCategories: true },
+      include: { subCategories: true, category: true },
     });
-
-    if (!journal) throw new NotFoundException('Journal not found');
+    if (!journal) throw new NotFoundException("Journal not found");
 
     const updated = await this.prisma.userJournal.update({
       where: { id: journalId },
+      include: { subCategories: true },
       data: {
         title_az: dto.title_az,
         title_en: dto.title_en,
@@ -72,13 +75,22 @@ export class JournalService {
         description_az: dto.description_az,
         description_en: dto.description_en,
         description_ru: dto.description_ru,
-        message: dto.message,
+        keywords_az: dto.keywords_az,
+        keywords_en: dto.keywords_en,
+        keywords_ru: dto.keywords_ru,
+        message: dto.message ?? journal.message,
         file: dto.file ?? journal.file,
         status: dto.status ?? journal.status,
+        category: {
+          set: dto.categoryIds ? [{ id: Number(dto.categoryIds) }] : [],
+        },
+        subCategories: {
+          set: dto.subCategoryIds ? [{ id: Number(dto.subCategoryIds) }] : [],
+        },
       },
     });
 
-    for (const sub of journal.subCategories) {
+    for (const sub of updated.subCategories) {
       await this.subCategoryService.updateCountAndStatus(sub.id);
     }
 

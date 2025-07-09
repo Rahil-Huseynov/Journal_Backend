@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Put, Delete, Patch } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Put, Delete, Patch, NotFoundException } from '@nestjs/common';
 import { JournalService } from './journal.service';
 import { JwtGuard } from 'src/auth/guard';
 import { CreateJournalDto } from './dto';
@@ -7,6 +7,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 
+const storage = diskStorage({
+    destination: './uploads',
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        const filename = `file-${uniqueSuffix}${ext}`;
+        cb(null, filename);
+    },
+});
 
 @Controller('journals')
 @UseGuards(JwtGuard)
@@ -101,7 +110,7 @@ export class JournalController {
     getAllJournals() {
         return this.journalService.getAllJournals();
     }
-    
+
     @Patch('update-status/:id')
     @UseGuards(AdminGuard)
     async updateStatus(
@@ -122,7 +131,20 @@ export class JournalController {
     adminDelete(@Param('id') id: string, @Req() req) {
         return this.journalService.deleteUserJournal(+id, req.user.id, true);
     }
+  
+    @Put(':id')
+    @UseInterceptors(FileInterceptor('file'))
+    async updateUserJournal(
+        @Param('id') id: string,
+        @Body() dto: CreateJournalDto,
+        @UploadedFile() file?: Express.Multer.File,
+    ) {
+        if (file) {
+            dto.file = `/uploads/${file.filename}`;
+        }
 
-
+        const updated = await this.journalService.updateUserJournal(parseInt(id), dto);
+        return updated;
+    }
 
 }

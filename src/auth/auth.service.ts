@@ -344,7 +344,6 @@ export class AuthService {
         role: true,
         organization: true,
         position: true,
-        userJournal: true,
         fatherName: true,
         phoneCode: true,
         phoneNumber: true,
@@ -356,6 +355,12 @@ export class AuthService {
         isForeignCitizen: true,
         citizenship: true,
         createdAt: true,
+        userJournal: {
+          include: {
+            category: true,
+            subCategories: true,
+          },
+        },
       },
     });
 
