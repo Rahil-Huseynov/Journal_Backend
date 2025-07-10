@@ -359,6 +359,7 @@ export class AuthService {
           include: {
             category: true,
             subCategories: true,
+            messages: true,
           },
         },
       },

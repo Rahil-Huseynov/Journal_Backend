@@ -5,7 +5,7 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 
 @Injectable()
 export class MessageService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
   async create(createMessageDto: CreateMessageDto) {
     const userJournal = await this.prisma.userJournal.findUnique({
       where: { id: createMessageDto.userJournalId },
@@ -59,7 +59,7 @@ export class MessageService {
   }
 
   async remove(id: number) {
-    await this.findOne(id); 
+    await this.findOne(id);
 
     return this.prisma.message.delete({
       where: { id },
