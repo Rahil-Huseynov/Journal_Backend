@@ -5,7 +5,7 @@ import { UpdateGlobalsubcategoryDto } from './dto/update-globalsubcategory.dto';
 
 @Injectable()
 export class GlobalsubcategoryService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   findAll() {
     return this.prisma.globalSubCategory.findMany({
@@ -18,9 +18,11 @@ export class GlobalsubcategoryService {
       where: { id },
     });
   }
+
   async create(dto: CreateGlobalsubcategoryDto, fileName: string | null) {
     const subCategoryJournals = await this.prisma.userJournal.findMany({
       where: {
+        status: 'finished',
         subCategories: {
           some: { id: dto.subCategoryId },
         },
@@ -51,15 +53,15 @@ export class GlobalsubcategoryService {
     });
 
     if (!existing) throw new NotFoundException('GlobalSubCategory tapılmadı');
-
     const subCategoryJournals = dto.subCategoryId
       ? await this.prisma.userJournal.findMany({
-        where: {
-          subCategories: {
-            some: { id: dto.subCategoryId },
+          where: {
+            status: 'finished',
+            subCategories: {
+              some: { id: dto.subCategoryId },
+            },
           },
-        },
-      })
+        })
       : [];
 
     const data: any = {

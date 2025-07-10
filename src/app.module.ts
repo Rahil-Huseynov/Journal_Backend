@@ -11,6 +11,7 @@ import { SubCategoryModule } from './subcategory/subcategory.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { GlobalsubcategoryModule } from './globalsubcategory/globalsubcategory.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule,
@@ -19,6 +20,7 @@ import { GlobalsubcategoryModule } from './globalsubcategory/globalsubcategory.m
     serveRoot: '/uploads',
   }),
   GlobalsubcategoryModule,
+  MessageModule,
   ],
 })
 export class AppModule {

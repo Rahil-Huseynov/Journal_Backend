@@ -122,6 +122,7 @@ model SubCategory {
   EndDate        String?
   status         String?  
   requireCount   Int     @default(0)
+  createdAt      DateTime @default(now())
 
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
@@ -155,7 +156,7 @@ model UserJournal {
   category      Category[]    @relation("JournalCategories")
   subCategories SubCategory[] @relation("JournalSubcategories")
   globalSubCategories GlobalSubCategory[] @relation("JournalGlobalSubcategories")
-
+  messages             message[]
   @@map("userJournal")
 }
 
@@ -165,4 +166,14 @@ model PasswordResetToken {
   user      User     @relation(fields: [userId], references: [id])
   expires   DateTime
   createdAt DateTime @default(now())
+}
+
+
+model message {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  problems       String?
+
+  userJournalId  Int                      // foreign key
+  userJournal    UserJournal @relation(fields: [userJournalId], references: [id], onDelete: Cascade)
 }
