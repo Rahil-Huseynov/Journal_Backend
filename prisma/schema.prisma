@@ -80,16 +80,15 @@ model Category {
   description_ru String?
   image          String
 
-
   globalSubCategory GlobalSubCategory[]
-  subCategories SubCategory[]
-  userJournal   UserJournal[] @relation("JournalCategories")
+  subCategories     SubCategory[]
+  userJournal       UserJournal[]       @relation("JournalCategories")
 
   @@map("category")
 }
 
 model GlobalSubCategory {
-  id             Int     @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   title_az       String?
   title_en       String?
   title_ru       String?
@@ -97,37 +96,37 @@ model GlobalSubCategory {
   description_en String?
   description_ru String?
   file           String
-  count          Int @default(0)
-  requireCount   Int @default(0)
+  count          Int      @default(0)
+  requireCount   Int      @default(0)
   categoryId     Int
-  category       Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  subCategoryId  Int?
-  subCategory    SubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: SetNull)
+  subCategoryId Int?
+  subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: SetNull)
 
-  userJournals   UserJournal[] @relation("JournalGlobalSubcategories")
+  userJournals UserJournal[] @relation("JournalGlobalSubcategories")
 
   @@map("global_subcategory")
 }
 
 model SubCategory {
-  id             Int     @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   title_az       String?
   title_en       String?
   title_ru       String?
   description_az String?
   description_en String?
   description_ru String?
-  count          Int     @default(0)
+  count          Int      @default(0)
   EndDate        String?
-  status         String?  
-  requireCount   Int     @default(0)
+  status         String?
+  requireCount   Int      @default(0)
   createdAt      DateTime @default(now())
 
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
 
-  journals           UserJournal[]       @relation("JournalSubcategories")
+  journals            UserJournal[]       @relation("JournalSubcategories")
   globalSubCategories GlobalSubCategory[]
 
   @@map("subcategory")
@@ -150,13 +149,14 @@ model UserJournal {
   userId         Int
   user           User     @relation(fields: [userId], references: [id])
   approved       Boolean  @default(false)
-  status         String?  
+  status         String?
   message        String?
 
-  category      Category[]    @relation("JournalCategories")
-  subCategories SubCategory[] @relation("JournalSubcategories")
+  category            Category[]          @relation("JournalCategories")
+  subCategories       SubCategory[]       @relation("JournalSubcategories")
   globalSubCategories GlobalSubCategory[] @relation("JournalGlobalSubcategories")
-  messages             message[]
+  messages            messages[]
+
   @@map("userJournal")
 }
 
@@ -168,12 +168,13 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 }
 
+model messages {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  problems  String?
 
-model message {
-  id             Int      @id @default(autoincrement())
-  createdAt      DateTime @default(now())
-  problems       String?
+  userJournalId Int
+  userJournal   UserJournal @relation(fields: [userJournalId], references: [id], onDelete: Cascade)
 
-  userJournalId  Int                      // foreign key
-  userJournal    UserJournal @relation(fields: [userJournalId], references: [id], onDelete: Cascade)
+  @@map("messages")
 }

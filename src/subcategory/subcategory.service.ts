@@ -10,7 +10,11 @@ export class SubCategoryService {
       orderBy: { id: 'desc' },
       include: {
         category: true,
-        journals: true,
+        journals: {
+          include: {
+            messages: true, 
+          },
+        },
       },
     });
   }

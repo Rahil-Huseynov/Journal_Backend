@@ -15,7 +15,7 @@ export class MessageService {
       throw new NotFoundException('UserJournal tapılmadı');
     }
 
-    return this.prisma.message.create({
+    return this.prisma.messages.create({
       data: {
         problems: createMessageDto.problems,
         userJournalId: createMessageDto.userJournalId,
@@ -23,7 +23,7 @@ export class MessageService {
     });
   }
   async findAll() {
-    return this.prisma.message.findMany({
+    return this.prisma.messages.findMany({
       include: {
         userJournal: true,
       },
@@ -33,7 +33,7 @@ export class MessageService {
     });
   }
   async findOne(id: number) {
-    const message = await this.prisma.message.findUnique({
+    const message = await this.prisma.messages.findUnique({
       where: { id },
       include: {
         userJournal: true,
@@ -50,7 +50,7 @@ export class MessageService {
   async update(id: number, updateMessageDto: UpdateMessageDto) {
     await this.findOne(id);
 
-    return this.prisma.message.update({
+    return this.prisma.messages.update({
       where: { id },
       data: {
         problems: updateMessageDto.problems,
@@ -61,7 +61,7 @@ export class MessageService {
   async remove(id: number) {
     await this.findOne(id);
 
-    return this.prisma.message.delete({
+    return this.prisma.messages.delete({
       where: { id },
     });
   }

@@ -22,7 +22,7 @@ export class MessageController {
       throw new NotFoundException('UserJournal tapılmadı');
     }
 
-    return this.prisma.message.create({
+    return this.prisma.messages.create({
       data: {
         problems: dto.problems,
         userJournalId: dto.userJournalId,
@@ -32,7 +32,7 @@ export class MessageController {
 
   @Get()
   async findAll() {
-    return this.prisma.message.findMany({
+    return this.prisma.messages.findMany({
       include: {
         userJournal: true,
       },
@@ -44,7 +44,7 @@ export class MessageController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const message = await this.prisma.message.findUnique({
+    const message = await this.prisma.messages.findUnique({
       where: { id: Number(id) },
       include: {
         userJournal: true,
