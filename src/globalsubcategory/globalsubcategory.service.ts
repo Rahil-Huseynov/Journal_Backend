@@ -1,11 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGlobalsubcategoryDto } from './dto/create-globalsubcategory.dto';
 import { UpdateGlobalsubcategoryDto } from './dto/update-globalsubcategory.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminGuard } from 'src/auth/guard';
 
 @Injectable()
 export class GlobalsubcategoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   findAll() {
     return this.prisma.globalSubCategory.findMany({
@@ -19,6 +21,7 @@ export class GlobalsubcategoryService {
     });
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   async create(dto: CreateGlobalsubcategoryDto, fileName: string | null) {
     const subCategoryJournals = await this.prisma.userJournal.findMany({
       where: {
@@ -47,6 +50,7 @@ export class GlobalsubcategoryService {
     });
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   async update(id: number, dto: UpdateGlobalsubcategoryDto, fileName: string | null = null) {
     const existing = await this.prisma.globalSubCategory.findUnique({
       where: { id },
@@ -55,13 +59,13 @@ export class GlobalsubcategoryService {
     if (!existing) throw new NotFoundException('GlobalSubCategory tapılmadı');
     const subCategoryJournals = dto.subCategoryId
       ? await this.prisma.userJournal.findMany({
-          where: {
-            status: 'finished',
-            subCategories: {
-              some: { id: dto.subCategoryId },
-            },
+        where: {
+          status: 'finished',
+          subCategories: {
+            some: { id: dto.subCategoryId },
           },
-        })
+        },
+      })
       : [];
 
     const data: any = {
@@ -90,7 +94,8 @@ export class GlobalsubcategoryService {
       data,
     });
   }
-
+    
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   remove(id: number) {
     return this.prisma.globalSubCategory.delete({
       where: { id },

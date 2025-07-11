@@ -2,13 +2,17 @@ import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@
 
 @Injectable()
 export class AdminGuard implements CanActivate {
-    canActivate(context: ExecutionContext): boolean {
-        const request = context.switchToHttp().getRequest();
-        const user = request.user;
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
 
-        if (!user) throw new ForbiddenException('User not authenticated');
-        if (!user.isAdmin) throw new ForbiddenException('Only admins can access this resource');
+    if (!user) throw new ForbiddenException('User not authenticated');
 
-        return true;
+    const allowedRoles = ['admin', 'superadmin'];
+    if (!allowedRoles.includes(user.role)) {
+      throw new ForbiddenException('Only admins or superadmins can access this resource');
     }
+
+    return true;
+  }
 }

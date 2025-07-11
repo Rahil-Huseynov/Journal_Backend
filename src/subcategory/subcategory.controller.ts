@@ -8,10 +8,13 @@ import {
   Body,
   ParseIntPipe,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { SubCategoryService } from './subcategory.service';
 import { CreateSubCategoryDto, UpdateSubCategoryDto } from './dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { AdminGuard } from 'src/auth/guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('subcategories')
 export class SubCategoryController {
@@ -29,12 +32,14 @@ export class SubCategoryController {
 
 
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post('add')
   @UseInterceptors(AnyFilesInterceptor())
   async create(@Body() body: CreateSubCategoryDto) {
     return this.subCategoryService.create(body);
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Put('update/:id')
   @UseInterceptors(AnyFilesInterceptor())
   async update(
@@ -44,6 +49,7 @@ export class SubCategoryController {
     return this.subCategoryService.update(id, dto);
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number) {
     return this.subCategoryService.deleteSubCategory(id);

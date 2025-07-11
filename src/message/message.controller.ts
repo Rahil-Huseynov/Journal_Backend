@@ -5,13 +5,18 @@ import {
   Body,
   Param,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { AdminGuard } from 'src/auth/guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('messages')
 export class MessageController {
   constructor(private readonly prisma: PrismaService) { }
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post()
   async create(@Body() dto: CreateMessageDto) {
     const userJournal = await this.prisma.userJournal.findUnique({

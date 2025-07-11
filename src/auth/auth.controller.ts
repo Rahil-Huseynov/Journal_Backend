@@ -3,7 +3,7 @@ import { AuthService } from "./auth.service";
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
 import { ForgotPasswordDto, LoginAuthDto, RegisterAdminAuthDto, RegisterAuthDto, ResetPasswordDto, UpdateUserDto } from "./dto";
 import { AuthGuard } from "@nestjs/passport";
-import { JwtGuard } from "./guard";
+import { AdminGuard, JwtGuard } from "./guard";
 
 @Controller('auth')
 export class AuthController {
@@ -15,7 +15,7 @@ export class AuthController {
         return this.authService.userSignup(dto);
     }
 
-
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
     @UseInterceptors(AnyFilesInterceptor())
     @Post('admin/signup')
     async adminSignup(
@@ -42,6 +42,7 @@ export class AuthController {
         return this.authService.getAllUsers(pageNumber, pageSize)
     }
 
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
     @Get('admins')
     async getAdmins(
         @Query('page') page = '1',
@@ -53,6 +54,7 @@ export class AuthController {
         return this.authService.getAllAdmins(pageNumber, limitNumber, search);
     }
 
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
     @Put('admin/:id')
     async updateAdmin(
         @Param('id', ParseIntPipe) id: number,
@@ -61,6 +63,7 @@ export class AuthController {
         return this.authService.updateAdmin(id, dto);
     }
 
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
     @Delete('admin/:id')
     async deleteAdmin(@Param('id', ParseIntPipe) id: number) {
         return this.authService.deleteAdmin(id);
@@ -124,6 +127,12 @@ export class AuthController {
         const currentPassword = req.body['currentPassword'];
         const newPassword = req.body['newPassword'];
         return this.authService.updatePassword(userId, currentPassword, newPassword);
+    }
+
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
+    @Get('admin/statistics')
+    async getStatisticsForAdmin() {
+        return this.authService.getStatisticsForAdmin();
     }
 
 }

@@ -32,6 +32,7 @@ export class CategoryController {
   }
 
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post('add')
   @UseInterceptors(FileInterceptor('image'))
   async create(
@@ -44,7 +45,8 @@ export class CategoryController {
     return this.categoryService.create(dto);
   }
 
-  
+
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async update(
@@ -61,6 +63,7 @@ export class CategoryController {
   }
 
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.categoryService.delete(id);

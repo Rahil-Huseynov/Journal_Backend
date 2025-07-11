@@ -81,6 +81,7 @@ export class AuthService {
     }
   }
 
+
   async signin(dto: LoginAuthDto) {
     const admin = await this.prisma.admin.findUnique({
       where: { email: dto.email },
@@ -90,7 +91,7 @@ export class AuthService {
       const pwMatches = await argon.verify(admin.hash, dto.password);
       if (!pwMatches) throw new ForbiddenException('Incorrect password');
 
-      const token = await this.signToken(admin.id, admin.email, true);
+      const token = await this.signToken(admin.id, admin.email, true, admin.role ?? 'admin');
 
       return {
         accessToken: token.access_token,
@@ -99,8 +100,8 @@ export class AuthService {
           firstName: admin.firstName,
           lastName: admin.lastName,
           email: admin.email,
-          role: 'admin',
-        }
+          role: admin.role ?? 'admin',
+        },
       };
     }
 
@@ -114,7 +115,7 @@ export class AuthService {
     if (!pwMatches) throw new ForbiddenException('Incorrect password');
 
     return {
-      accessToken: (await this.signToken(user.id, user.email, false)).access_token,
+      accessToken: (await this.signToken(user.id, user.email, false, user.role ?? 'client')).access_token,
       user: {
         id: user.id,
         email: user.email,
@@ -133,21 +134,22 @@ export class AuthService {
         organization: user.organization,
         position: user.position,
         citizenship: user.citizenship,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       },
     };
   }
-
 
   async signToken(
     userId: number,
     email: string,
     isAdmin: boolean,
+    role: string,
   ): Promise<{ access_token: string }> {
     const payload = {
       sub: userId,
       email,
       isAdmin,
+      role,
     };
     const secret = this.config.get('JWT_SECRET');
     const token = await this.jwt.signAsync(payload, {
@@ -159,6 +161,10 @@ export class AuthService {
       access_token: token,
     };
   }
+
+
+
+
   async getAllUsers(page = 1, limit = 10) {
     const skip = (page - 1) * limit
 
@@ -332,6 +338,42 @@ export class AuthService {
 
     return { message: 'User deleted successfully' };
   }
+
+  async getStatisticsForAdmin() {
+    const totalUsers = await this.prisma.user.count();
+    const totalUserJournals = await this.prisma.userJournal.count();
+    const activeUserJournals = await this.prisma.userJournal.count({
+      where: {
+        status: {
+          not: 'finished',
+        },
+      },
+    });
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const todayUpdatedUsers = await this.prisma.user.count({
+      where: {
+        updatedAt: {
+          gte: startOfToday,
+          lte: endOfToday,
+        },
+      },
+    });
+
+    return {
+      totalUsers,
+      totalUserJournals,
+      activeUserJournals,
+      todayUpdatedUsers,
+    };
+  }
+
+
 
   async getUserById(userId: number) {
     const user = await this.prisma.user.findUnique({

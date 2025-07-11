@@ -5,7 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { JournalModule } from './journal/journal.module';
 import { AdminSeederModule } from './admin-seed/admin-seeder.module';
-// import { OriginCheckMiddleware } from './common/middleware/origin-check.middleware';
+import { OriginCheckMiddleware } from './common/middleware/origin-check.middleware';
 import { CategoryModule } from './category/category.module';
 import { SubCategoryModule } from './subcategory/subcategory.module';
 import { join } from 'path';
@@ -24,9 +24,9 @@ import { MessageModule } from './message/message.module';
   ],
 })
 export class AppModule {
-  // configure(consumer: MiddlewareConsumer) {
-  //   consumer
-  //     .apply(OriginCheckMiddleware)
-  //     .forRoutes({ path: '*', method: RequestMethod.ALL });
-  // }
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(OriginCheckMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
 }
