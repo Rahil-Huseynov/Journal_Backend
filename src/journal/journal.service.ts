@@ -7,8 +7,45 @@ import { SubCategoryService } from 'src/subcategory/subcategory.service';
 export class JournalService {
   constructor(
     private prisma: PrismaService,
-    private subCategoryService: SubCategoryService, // inject edildi
+    private subCategoryService: SubCategoryService,
   ) { }
+
+  async getUserFilterJournals(filter: { status?: string; subCategoryId?: number }) {
+    const { status, subCategoryId } = filter;
+
+    const where: any = {};
+    if (status) where.status = status;
+    if (subCategoryId) {
+      where.subCategories = {
+        some: {
+          id: subCategoryId,
+        },
+      };
+    }
+
+    const journals = await this.prisma.userJournal.findMany({
+      where,
+    });
+
+    return journals;
+  }
+  async updateOrder(id: number, order: number) {
+    const journal = await this.prisma.userJournal.findUnique({
+      where: { id },
+    });
+
+    if (!journal) {
+      throw new NotFoundException(`Journal with id ${id} not found`);
+    }
+
+    const updatedJournal = await this.prisma.userJournal.update({
+      where: { id },
+      data: { order },
+    });
+
+    return updatedJournal;
+  }
+
 
   async createJournal(dto: CreateJournalDto, userId: number) {
     let filePath = '';
@@ -78,6 +115,7 @@ export class JournalService {
         keywords_az: dto.keywords_az,
         keywords_en: dto.keywords_en,
         keywords_ru: dto.keywords_ru,
+        order: dto.order,
         message: dto.message ?? journal.message,
         file: dto.file ?? journal.file,
         status: dto.status ?? journal.status,
@@ -143,6 +181,7 @@ export class JournalService {
         keywords_az: true,
         keywords_en: true,
         keywords_ru: true,
+        order: true,
         message: true,
         file: true,
         createdAt: true,

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Put, Delete, Patch, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, Param, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Put, Delete, Patch, NotFoundException, Query } from '@nestjs/common';
 import { JournalService } from './journal.service';
 import { JwtGuard } from 'src/auth/guard';
 import { CreateJournalDto } from './dto';
@@ -6,6 +6,7 @@ import { AdminGuard } from './guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { GetJournalsFilterDto } from './dto/get-journals-filter.dto';
 
 const storage = diskStorage({
     destination: './uploads',
@@ -21,6 +22,24 @@ const storage = diskStorage({
 @UseGuards(JwtGuard)
 export class JournalController {
     constructor(private readonly journalService: JournalService) { }
+
+
+    @Get("filter")
+    async getUserFilterJournals(@Query() filterDto: GetJournalsFilterDto) {
+        const { status, subCategoryId } = filterDto;
+        return this.journalService.getUserFilterJournals({
+            status,
+            subCategoryId: subCategoryId ? +subCategoryId : undefined,
+        });
+    }
+    @Put(':id/order')
+    async updateJournalOrder(
+        @Param('id') id: string,
+        @Body('order') order: number,
+    ) {
+        return this.journalService.updateOrder(+id, order);
+    }
+
 
     @Get('all-approved')
     @UseGuards(AdminGuard)
@@ -131,7 +150,7 @@ export class JournalController {
     adminDelete(@Param('id') id: string, @Req() req) {
         return this.journalService.deleteUserJournal(+id, req.user.id, true);
     }
-  
+
     @Put(':id')
     @UseInterceptors(FileInterceptor('file'))
     async updateUserJournal(

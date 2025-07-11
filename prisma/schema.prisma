@@ -133,25 +133,25 @@ model SubCategory {
 }
 
 model UserJournal {
-  id             Int      @id @default(autoincrement())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  title_az       String?
-  title_en       String?
-  title_ru       String?
-  description_az String?
-  description_en String?
-  description_ru String?
-  keywords_en    String?
-  keywords_az    String?
-  keywords_ru    String?
-  file           String
-  userId         Int
-  user           User     @relation(fields: [userId], references: [id])
-  approved       Boolean  @default(false)
-  status         String?
-  message        String?
-
+  id                  Int                 @id @default(autoincrement())
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  title_az            String?
+  title_en            String?
+  title_ru            String?
+  description_az      String?
+  description_en      String?
+  description_ru      String?
+  keywords_en         String?
+  keywords_az         String?
+  keywords_ru         String?
+  file                String
+  userId              Int
+  user                User                @relation(fields: [userId], references: [id])
+  approved            Boolean             @default(false)
+  status              String?
+  message             String?
+  order               Int                 @default(0)
   category            Category[]          @relation("JournalCategories")
   subCategories       SubCategory[]       @relation("JournalSubcategories")
   globalSubCategories GlobalSubCategory[] @relation("JournalGlobalSubcategories")
