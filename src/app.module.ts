@@ -12,15 +12,16 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { GlobalsubcategoryModule } from './globalsubcategory/globalsubcategory.module';
 import { MessageModule } from './message/message.module';
+import { NewsModule } from './news/news.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule,
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
   ServeStaticModule.forRoot({
     rootPath: join(__dirname, '..', 'uploads'),
     serveRoot: '/uploads',
   }),
-  GlobalsubcategoryModule,
-  MessageModule,
+    GlobalsubcategoryModule,
+    MessageModule,
   ],
 })
 export class AppModule {

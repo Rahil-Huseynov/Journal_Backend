@@ -178,3 +178,28 @@ model messages {
 
   @@map("messages")
 }
+
+
+model author {
+  id                Int      @id @default(autoincrement())
+  createdAt         DateTime @default(now())
+  firstName         String?
+  lastName          String?
+  about             String?
+
+  @@map("author")
+}
+
+model news {
+  id                Int      @id @default(autoincrement())
+  createdAt         DateTime @default(now())
+  title_az          String?
+  title_en          String?
+  title_ru          String?
+  description_az    String? 
+  description_en    String?
+  description_ru    String?
+  image             String?
+
+  @@map("news")
+}
