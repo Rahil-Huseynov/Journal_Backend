@@ -10,12 +10,9 @@ export class OriginCheckMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     const origin = req.headers.origin;
-    console.log('Request Origin:', origin);
-
     if (!origin || this.allowedOrigins.includes(origin)) {
       next();
     } else {
-      console.log('Forbidden Origin:', origin);
       throw new ForbiddenException('Access denied: Unauthorized origin');
     }
   }

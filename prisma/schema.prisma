@@ -83,6 +83,8 @@ model Category {
   globalSubCategory GlobalSubCategory[]
   subCategories     SubCategory[]
   userJournal       UserJournal[]       @relation("JournalCategories")
+  authors           Author[]            @relation("AuthorCategories")
+
 
   @@map("category")
 }
@@ -180,15 +182,18 @@ model messages {
 }
 
 
-model author {
-  id                Int      @id @default(autoincrement())
-  createdAt         DateTime @default(now())
-  firstName         String?
-  lastName          String?
-  about             String?
+model Author {
+  id         Int        @id @default(autoincrement())
+  createdAt  DateTime   @default(now())
+  firstName  String?
+  lastName   String?
+  about      String?
+
+  categories Category[] @relation("AuthorCategories")
 
   @@map("author")
 }
+
 
 model news {
   id                Int      @id @default(autoincrement())

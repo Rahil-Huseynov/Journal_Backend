@@ -11,7 +11,7 @@ import { SubCategoryModule } from 'src/subcategory/subcategory.module';
     SubCategoryModule,
     PrismaModule,
     MulterModule.register({
-      dest: './uploads',
+      dest: './uploads/journals',
     }),
   ],
   controllers: [JournalController],

@@ -13,9 +13,10 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { GlobalsubcategoryModule } from './globalsubcategory/globalsubcategory.module';
 import { MessageModule } from './message/message.module';
 import { NewsModule } from './news/news.module';
+import { AuthorModule } from './author/author.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule,AuthorModule,AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
   ServeStaticModule.forRoot({
     rootPath: join(__dirname, '..', 'uploads'),
     serveRoot: '/uploads',

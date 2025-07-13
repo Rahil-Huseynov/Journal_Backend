@@ -50,7 +50,7 @@ export class JournalService {
   async createJournal(dto: CreateJournalDto, userId: number) {
     let filePath = '';
     if (dto.file) {
-      filePath = '/uploads/' + dto.file;
+      filePath = '/uploads/journals' + dto.file;
     }
 
     const journal = await this.prisma.userJournal.create({
