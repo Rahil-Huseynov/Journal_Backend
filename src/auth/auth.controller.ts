@@ -32,6 +32,7 @@ export class AuthController {
         return this.authService.signin(dto);
     }
 
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
     @Get('users')
     getUsers(
         @Query('page') page: string,
