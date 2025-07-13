@@ -23,7 +23,8 @@ export class AuthorService {
       data: {
         firstName: dto.firstName,
         lastName: dto.lastName,
-        about: dto.about,
+        workplace: dto.workplace,
+        country: dto.country,
         categories: {
           connect: connectCategories,
         },
@@ -40,7 +41,8 @@ export class AuthorService {
       data: {
         firstName: dto.firstName ?? author.firstName,
         lastName: dto.lastName ?? author.lastName,
-        about: dto.about ?? author.about,
+        workplace: dto.workplace ?? author.workplace,
+        country: dto.country ?? author.country
       },
     });
   }

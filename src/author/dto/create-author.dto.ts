@@ -11,7 +11,11 @@ export class CreateAuthorDto {
 
   @IsOptional()
   @IsString()
-  about?: string;
+  workplace?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
 
   @IsOptional()
   @IsArray()

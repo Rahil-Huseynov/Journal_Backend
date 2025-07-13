@@ -187,7 +187,8 @@ model Author {
   createdAt  DateTime   @default(now())
   firstName  String?
   lastName   String?
-  about      String?
+  workplace  String?
+  country    String?
 
   categories Category[] @relation("AuthorCategories")
 
