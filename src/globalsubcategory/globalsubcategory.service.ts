@@ -12,6 +12,9 @@ export class GlobalsubcategoryService {
   findAll() {
     return this.prisma.globalSubCategory.findMany({
       orderBy: { id: 'desc' },
+      include: {
+        userJournals: true,
+      },
     });
   }
 
@@ -40,12 +43,16 @@ export class GlobalsubcategoryService {
         description_az: dto.description_az,
         description_en: dto.description_en,
         description_ru: dto.description_ru,
+        image: dto.image,
         file: fileName || '',
         categoryId: dto.categoryId,
         subCategoryId: dto.subCategoryId,
         userJournals: {
           connect: subCategoryJournals.map((journal) => ({ id: journal.id })),
         },
+      },
+      include: {
+        userJournals: true,
       },
     });
   }
@@ -75,6 +82,7 @@ export class GlobalsubcategoryService {
       description_az: dto.description_az,
       description_en: dto.description_en,
       description_ru: dto.description_ru,
+      image: dto.image,
       categoryId: dto.categoryId,
       subCategoryId: dto.subCategoryId,
     };
@@ -94,7 +102,7 @@ export class GlobalsubcategoryService {
       data,
     });
   }
-    
+
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   remove(id: number) {
     return this.prisma.globalSubCategory.delete({

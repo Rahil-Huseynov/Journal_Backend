@@ -102,7 +102,7 @@ model GlobalSubCategory {
   requireCount   Int      @default(0)
   categoryId     Int
   category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
+  image          String?
   subCategoryId Int?
   subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: SetNull)
 
@@ -124,7 +124,7 @@ model SubCategory {
   status         String?
   requireCount   Int      @default(0)
   createdAt      DateTime @default(now())
-
+  image          String?
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
 

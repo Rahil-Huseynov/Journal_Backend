@@ -12,7 +12,7 @@ export class SubCategoryService {
         category: true,
         journals: {
           include: {
-            messages: true, 
+            messages: true,
           },
         },
       },
@@ -62,6 +62,7 @@ export class SubCategoryService {
         count: 0,
         requireCount: dto.requireCount ?? 0,
         status: dto.Status ?? 'active',
+        image: dto.image,
         category: {
           connect: { id: dto.categoryId },
         },
@@ -79,6 +80,7 @@ export class SubCategoryService {
       description_en: string | null;
       description_ru: string | null;
       categoryId: number;
+      image: string | null;
       requireCount: number | null;
       count: number | null;
       status: string | null;
@@ -101,6 +103,8 @@ export class SubCategoryService {
     if (dto.description_az !== undefined) data.description_az = dto.description_az;
     if (dto.description_en !== undefined) data.description_en = dto.description_en;
     if (dto.description_ru !== undefined) data.description_ru = dto.description_ru;
+
+    if (dto.image !== undefined) data.image = dto.image;
 
     if (dto.requireCount !== undefined) data.requireCount = Number(dto.requireCount);
     if (dto.Status !== undefined) data.status = dto.Status;

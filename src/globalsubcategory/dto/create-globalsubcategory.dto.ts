@@ -26,6 +26,11 @@ export class CreateGlobalsubcategoryDto {
   @IsString()
   description_ru?: string;
 
+
+  @IsOptional()
+  @IsString()
+  image?: string| null;
+
   @Type(() => Number)
   @IsInt()
   categoryId: number;

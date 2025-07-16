@@ -12,6 +12,11 @@ export class CategoryService {
       include: {
         subCategories: true,
         authors: true,
+        globalSubCategory: {
+          include: {
+            userJournals: true,
+          },
+        },
       },
     });
   }
@@ -21,6 +26,11 @@ export class CategoryService {
       where: { id },
       include: {
         subCategories: true,
+        globalSubCategory: {
+          include: {
+            userJournals: true, 
+          },
+        },
         authors: true,
       },
     });
