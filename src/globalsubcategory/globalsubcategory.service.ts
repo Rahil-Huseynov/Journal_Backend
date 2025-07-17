@@ -21,6 +21,9 @@ export class GlobalsubcategoryService {
   findOne(id: number) {
     return this.prisma.globalSubCategory.findUnique({
       where: { id },
+      include: {
+        userJournals: true, 
+      }
     });
   }
 

@@ -48,11 +48,6 @@ export class JournalService {
 
 
   async createJournal(dto: CreateJournalDto, userId: number) {
-    let filePath = '';
-    if (dto.file) {
-      filePath = '/uploads/journals' + dto.file;
-    }
-
     const journal = await this.prisma.userJournal.create({
       data: {
         title_az: dto.title_az,
@@ -66,7 +61,7 @@ export class JournalService {
         keywords_ru: dto.keywords_ru,
         status: dto.status,
         message: dto.message,
-        file: filePath,
+        file: dto.file || '',
         userId: userId,
         approved: false,
         category: {
