@@ -9,11 +9,14 @@ import {
     UploadedFile,
     Get,
     Delete,
+    UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { NewsService } from './news.service';
+import { AdminGuard } from 'src/auth/guard';
+import { AuthGuard } from '@nestjs/passport';
 
 const storage = diskStorage({
     destination: './uploads/news',
@@ -38,6 +41,7 @@ export class NewsController {
         return this.newsService.getById(id);
     }
 
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
     @Post()
     @UseInterceptors(FileInterceptor('image', { storage }))
     async create(
@@ -51,6 +55,7 @@ export class NewsController {
         return this.newsService.create(dto);
     }
 
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
     @Put(':id')
     @UseInterceptors(FileInterceptor('image', { storage }))
     async update(
@@ -65,6 +70,7 @@ export class NewsController {
         return this.newsService.update(id, dto);
     }
 
+    @UseGuards(AuthGuard('jwt'), AdminGuard)
     @Delete(':id')
     async delete(@Param('id', ParseIntPipe) id: number) {
         return this.newsService.delete(id);

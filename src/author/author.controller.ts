@@ -11,11 +11,13 @@ import {
   UploadedFiles,
   Body,
   UploadedFile,
+  UseGuards,
 } from '@nestjs/common';
-import { UpdateAuthorDto } from './dto/update-author.dto';
 import { AuthorService } from './author.service';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
+import { AdminGuard } from 'src/auth/guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('author')
 export class AuthorController {
@@ -31,6 +33,7 @@ export class AuthorController {
     return this.authorService.findOne(id);
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post()
   @UseInterceptors(AnyFilesInterceptor())
   async create(@Req() req: Request) {
@@ -43,19 +46,19 @@ export class AuthorController {
     return this.authorService.create(body);
   }
 
-
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Put(':id')
   @UseInterceptors(FileInterceptor('file'))
   update(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFile() file: Express.Multer.File, 
-    @Body() body: any, 
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any,
   ) {
     return this.authorService.update(id, body);
   }
 
 
-
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.authorService.remove(id);

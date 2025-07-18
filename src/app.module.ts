@@ -14,9 +14,18 @@ import { GlobalsubcategoryModule } from './globalsubcategory/globalsubcategory.m
 import { MessageModule } from './message/message.module';
 import { NewsModule } from './news/news.module';
 import { AuthorModule } from './author/author.module';
+import { LogsModule } from './logspage/logs.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, UserModule,AuthorModule,AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpLoggingInterceptor,
+    },
+  ],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, LogsModule, UserModule, AuthorModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
   ServeStaticModule.forRoot({
     rootPath: join(__dirname, '..', 'uploads'),
     serveRoot: '/uploads',

@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   ParseIntPipe,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -17,6 +18,8 @@ import { extname } from 'path';
 import { GlobalsubcategoryService } from './globalsubcategory.service';
 import { CreateGlobalsubcategoryDto } from './dto/create-globalsubcategory.dto';
 import { UpdateGlobalsubcategoryDto } from './dto/update-globalsubcategory.dto';
+import { AdminGuard } from 'src/auth/guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('globalsubcategory')
 export class GlobalsubcategoryController {
@@ -37,6 +40,7 @@ export class GlobalsubcategoryController {
     return item;
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
@@ -47,7 +51,6 @@ export class GlobalsubcategoryController {
           cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
-      limits: { fileSize: 10 * 1024 * 1024 }, // max 10MB
     }),
   )
   async create(
@@ -58,6 +61,7 @@ export class GlobalsubcategoryController {
     return this.globalsubcategoryService.create(body, fileName);
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Put(':id')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -79,7 +83,7 @@ export class GlobalsubcategoryController {
     return this.globalsubcategoryService.update(id, body, file ? file.filename : null);
   }
 
-
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.globalsubcategoryService.remove(id);
