@@ -1,17 +1,21 @@
 import {
   Controller, Post, Get, Put, Delete,
   Param, Body, ParseIntPipe, BadRequestException,
-  UseInterceptors, UploadedFile
+  UseInterceptors, UploadedFile,
+  UseGuards
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateNewsImageDto } from './dto/create-news-image.dto';
 import { UpdateNewsImageDto } from './dto/update-news-image.dto';
 import { NewsImageService } from './newsImage.service';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminGuard } from 'src/auth/guard';
 
 @Controller('news-images')
 export class NewsImageController {
-  constructor(private readonly svc: NewsImageService) {}
+  constructor(private readonly svc: NewsImageService) { }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   create(
@@ -35,6 +39,7 @@ export class NewsImageController {
     return this.svc.findOne(id);
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   update(
@@ -46,6 +51,7 @@ export class NewsImageController {
     return this.svc.update(id, dto);
   }
 
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.svc.remove(id);

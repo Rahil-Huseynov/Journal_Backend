@@ -15,11 +15,6 @@ import { NewsImageService } from './newsImage.service';
           cb(null, uniqueName);
         },
       }),
-      fileFilter: (_req, file, cb) => {
-        if (!file.mimetype.match(/^image\/(png|jpe?g|gif|webp)$/)) {
-          cb(new Error('Yalnız image fayllar!'), false);
-        } else cb(null, true);
-      },
     }),
   ],
   controllers: [NewsImageController],
