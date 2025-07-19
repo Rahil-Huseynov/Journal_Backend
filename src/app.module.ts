@@ -17,6 +17,7 @@ import { AuthorModule } from './author/author.module';
 import { LogsModule } from './logspage/logs.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
+import { NewsImageModule } from './newsImage/newsImage.module';
 
 @Module({
   providers: [
@@ -25,7 +26,7 @@ import { HttpLoggingInterceptor } from './common/interceptors/http-logging.inter
       useClass: HttpLoggingInterceptor,
     },
   ],
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, LogsModule, UserModule, AuthorModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, NewsImageModule, LogsModule, UserModule, AuthorModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
   ServeStaticModule.forRoot({
     rootPath: join(__dirname, '..', 'uploads'),
     serveRoot: '/uploads',

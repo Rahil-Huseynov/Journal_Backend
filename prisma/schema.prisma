@@ -219,7 +219,17 @@ model news {
   description_az    String? 
   description_en    String?
   description_ru    String?
-  image             String?
+  images            newsImage[] 
 
   @@map("news")
+}
+
+
+model newsImage{
+  id    Int     @id @default(autoincrement())
+  image   String?
+  newsId  Int   
+  news    news?    @relation(fields: [newsId], references: [id])
+
+  @@map("newsImage")
 }
