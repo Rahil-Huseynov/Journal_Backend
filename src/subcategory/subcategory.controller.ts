@@ -29,7 +29,7 @@ const subCategoryStorage = diskStorage({
 
 @Controller('subcategories')
 export class SubCategoryController {
-  constructor(private readonly subCategoryService: SubCategoryService) {}
+  constructor(private readonly subCategoryService: SubCategoryService) { }
 
   @Get()
   getAll() {
@@ -43,11 +43,7 @@ export class SubCategoryController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post('add')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: subCategoryStorage,
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image', { storage: subCategoryStorage }))
   async create(
     @Body() body: CreateSubCategoryDto,
     @UploadedFile() file?: Express.Multer.File,
@@ -59,12 +55,7 @@ export class SubCategoryController {
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Put('update/:id')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: subCategoryStorage,
-      limits: { fileSize: 10 * 1024 * 1024 },
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image', { storage: subCategoryStorage }))
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateSubCategoryDto,

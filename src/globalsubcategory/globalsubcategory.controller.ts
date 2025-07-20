@@ -6,13 +6,13 @@ import {
   Put,
   Param,
   Delete,
-  UploadedFile,
   UseInterceptors,
   ParseIntPipe,
   NotFoundException,
   UseGuards,
+  UploadedFiles,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';  // <-- Dəyişdi
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { GlobalsubcategoryService } from './globalsubcategory.service';
@@ -24,7 +24,6 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('globalsubcategory')
 export class GlobalsubcategoryController {
   constructor(private readonly globalsubcategoryService: GlobalsubcategoryService) { }
-
 
   @Get()
   findAll() {
@@ -43,44 +42,59 @@ export class GlobalsubcategoryController {
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Post()
   @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/globalsubcategory',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, uniqueSuffix + extname(file.originalname));
-        },
-      }),
-    }),
+    FileFieldsInterceptor(
+      [
+        { name: 'file', maxCount: 1 },
+        { name: 'image', maxCount: 1 },
+      ],
+      {
+        storage: diskStorage({
+          destination: './uploads/globalsubcategory',
+          filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(null, uniqueSuffix + extname(file.originalname));
+          },
+        }),
+      }
+    ),
   )
   async create(
     @Body() body: CreateGlobalsubcategoryDto,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFiles() files: { file?: Express.Multer.File[]; image?: Express.Multer.File[] },
   ) {
-    const fileName = file ? file.filename : null;
-    return this.globalsubcategoryService.create(body, fileName);
+    const fileName = files.file?.[0]?.filename ?? null;
+    const imageName = files.image?.[0]?.filename ?? null;
+    return this.globalsubcategoryService.create(body, imageName, fileName);
   }
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   @Put(':id')
   @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/globalsubcategory',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, uniqueSuffix + extname(file.originalname));
-        },
-      }),
-      limits: { fileSize: 10 * 1024 * 1024 },
-    }),
+    FileFieldsInterceptor(
+      [
+        { name: 'file', maxCount: 1 },
+        { name: 'image', maxCount: 1 },
+      ],
+      {
+        storage: diskStorage({
+          destination: './uploads/globalsubcategory',
+          filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(null, uniqueSuffix + extname(file.originalname));
+          },
+        }),
+      }
+    ),
   )
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateGlobalsubcategoryDto,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFiles() files: { file?: Express.Multer.File[]; image?: Express.Multer.File[] },
   ) {
-    return this.globalsubcategoryService.update(id, body, file ? file.filename : null);
+    const fileName = files.file?.[0]?.filename ?? null;
+    const imageName = files.image?.[0]?.filename ?? null;
+
+    return this.globalsubcategoryService.update(id, body, fileName, imageName);
   }
 
   @UseGuards(AuthGuard('jwt'), AdminGuard)
@@ -88,5 +102,4 @@ export class GlobalsubcategoryController {
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.globalsubcategoryService.remove(id);
   }
-
 }

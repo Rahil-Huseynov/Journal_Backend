@@ -124,7 +124,6 @@ model SubCategory {
   status         String?
   requireCount   Int      @default(0)
   createdAt      DateTime @default(now())
-  image          String?
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
 

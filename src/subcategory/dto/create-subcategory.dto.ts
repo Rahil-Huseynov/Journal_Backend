@@ -30,10 +30,6 @@ export class CreateSubCategoryDto {
   @IsString()
   Status?: string;
 
-  @IsOptional()
-  @IsString()
-  image?: string | null
-
   @Type(() => Number)
   @IsNumber()
   categoryId?: number;
