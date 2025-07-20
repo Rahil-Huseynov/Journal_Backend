@@ -14,17 +14,18 @@ import {
   Patch,
   NotFoundException,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { JournalService } from './journal.service';
 import { JwtGuard } from 'src/auth/guard';
-import { CreateJournalDto } from './dto';
+import { CreateJournalDto, UpdateJournalDto } from './dto';
 import { AdminGuard } from './guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { GetJournalsFilterDto } from './dto/get-journals-filter.dto';
+import { appendFile } from 'fs';
 
-// Yaradacağımız faylları bu qovluğa yazırıq
 const journalStorage = diskStorage({
   destination: './uploads/journals/',
   filename: (_req, file, cb) => {
@@ -34,10 +35,20 @@ const journalStorage = diskStorage({
   },
 });
 
+
+const approvedFileStorage = diskStorage({
+  destination: './uploads/journals/approved/', 
+  filename: (_req, file, cb) => {
+    const timestamp = Date.now();
+    const ext = extname(file.originalname);
+    cb(null, `approved-${timestamp}${ext}`); 
+  },
+});
+
 @Controller('journals')
 @UseGuards(JwtGuard)
 export class JournalController {
-  constructor(private readonly journalService: JournalService) {}
+  constructor(private readonly journalService: JournalService) { }
 
   @Get('filter')
   async getUserFilterJournals(@Query() filterDto: GetJournalsFilterDto) {
@@ -69,7 +80,6 @@ export class JournalController {
     @Body() body: any,
     @Req() req: any,
   ) {
-    // categoryIds və subCategoryIds JSON kimi gəlir
     let categoryIds: number[] = [];
     let subCategoryIds: number[] = [];
 
@@ -97,6 +107,7 @@ export class JournalController {
       categoryIds,
       subCategoryIds,
       file: file?.filename,
+      approvedFile: body.appendFile,
     };
 
     const userId = Number(req.user.id);
@@ -170,4 +181,20 @@ export class JournalController {
     }
     return this.journalService.updateUserJournal(+id, dto);
   }
+
+  @Put('approve/:id')
+  @UseInterceptors(FileInterceptor('approvedFile', { storage: approvedFileStorage }))
+  async updateJournal(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() approvedFile: Express.Multer.File,
+    @Body() dto: UpdateJournalDto,
+  ) {
+    return this.journalService.updateUserJournalDemo(
+      id,
+      dto,
+      approvedFile?.filename 
+    );
+  }
+
+
 }

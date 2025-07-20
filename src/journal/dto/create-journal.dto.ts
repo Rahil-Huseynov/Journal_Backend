@@ -53,6 +53,9 @@ export class CreateJournalDto {
   @IsOptional()
   file?: string;
 
+  @IsOptional()
+  approvedFile?: string;
+
   @IsNumber()
   order?: number
 

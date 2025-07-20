@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateJournalDto } from './dto';
+import { CreateJournalDto, UpdateJournalDto } from './dto';
 import { SubCategoryService } from 'src/subcategory/subcategory.service';
 
 @Injectable()
@@ -62,6 +62,7 @@ export class JournalService {
         status: dto.status,
         message: dto.message,
         file: dto.file || '',
+        approvedFile: dto.approvedFile || '',
         userId: userId,
         approved: false,
         category: {
@@ -112,6 +113,7 @@ export class JournalService {
         keywords_ru: dto.keywords_ru,
         order: dto.order,
         message: dto.message ?? journal.message,
+        approvedFile: dto.approvedFile ?? journal.approvedFile,
         file: dto.file ?? journal.file,
         status: dto.status ?? journal.status,
         category: {
@@ -179,6 +181,7 @@ export class JournalService {
         order: true,
         message: true,
         file: true,
+        approvedFile: true,
         createdAt: true,
         approved: true,
         status: true,
@@ -283,5 +286,40 @@ export class JournalService {
       where: { id: journalId },
     });
   }
+
+async updateUserJournalDemo(
+  journalId: number,
+  dto: UpdateJournalDto,
+  approvedFileName?: string,
+) {
+  const journal = await this.prisma.userJournal.findUnique({
+    where: { id: journalId },
+  });
+
+  if (!journal) throw new NotFoundException("Journal not found");
+
+  const updated = await this.prisma.userJournal.update({
+    where: { id: journalId },
+    data: {
+      title_az: dto.title_az,
+      title_en: dto.title_en,
+      title_ru: dto.title_ru,
+      description_az: dto.description_az,
+      description_en: dto.description_en,
+      description_ru: dto.description_ru,
+      keywords_az: dto.keywords_az,
+      keywords_en: dto.keywords_en,
+      keywords_ru: dto.keywords_ru,
+      order: dto.order ? Number(dto.order) : journal.order,
+      message: dto.message ?? journal.message,
+      approvedFile: approvedFileName ?? journal.approvedFile, 
+      file: dto.file ?? journal.file,
+      status: dto.status ?? journal.status,
+    },
+  });
+
+  return updated;
+}
+
 
 }
