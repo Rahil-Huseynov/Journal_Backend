@@ -15,6 +15,10 @@ export class CreateAuthorDto {
 
   @IsOptional()
   @IsString()
+  academicdegree?: string;
+
+  @IsOptional()
+  @IsString()
   country?: string;
 
   @IsOptional()

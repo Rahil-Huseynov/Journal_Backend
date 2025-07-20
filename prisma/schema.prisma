@@ -201,6 +201,7 @@ model Author {
   createdAt  DateTime   @default(now())
   firstName  String?
   lastName   String?
+  academicdegree String?
   workplace  String?
   country    String?
 
