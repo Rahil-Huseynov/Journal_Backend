@@ -9,7 +9,6 @@ import { OriginCheckMiddleware } from './common/middleware/origin-check.middlewa
 import { CategoryModule } from './category/category.module';
 import { SubCategoryModule } from './subcategory/subcategory.module';
 import { join } from 'path';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { GlobalsubcategoryModule } from './globalsubcategory/globalsubcategory.module';
 import { MessageModule } from './message/message.module';
 import { NewsModule } from './news/news.module';
@@ -18,6 +17,7 @@ import { LogsModule } from './logspage/logs.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
 import { NewsImageModule } from './newsImage/newsImage.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   providers: [
@@ -26,8 +26,7 @@ import { NewsImageModule } from './newsImage/newsImage.module';
       useClass: HttpLoggingInterceptor,
     },
   ],
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, NewsImageModule, LogsModule, UserModule, AuthorModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
-  ServeStaticModule.forRoot({
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, NewsImageModule, LogsModule, UserModule, AuthorModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule, ServeStaticModule.forRoot({
     rootPath: join(__dirname, '..', 'uploads'),
     serveRoot: '/uploads',
   }),
