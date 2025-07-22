@@ -18,6 +18,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
 import { NewsImageModule } from './newsImage/newsImage.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CustomCacheInterceptor } from './common/interceptors/custom-cache.interceptor';
 
 @Module({
   providers: [
@@ -25,10 +27,19 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       provide: APP_INTERCEPTOR,
       useClass: HttpLoggingInterceptor,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CustomCacheInterceptor,
+    },
   ],
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, NewsImageModule, LogsModule, UserModule, AuthorModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule, ServeStaticModule.forRoot({
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, NewsImageModule, LogsModule, UserModule, AuthorModule, AdminSeederModule, PrismaModule, JournalModule, CategoryModule, SubCategoryModule, NewsModule,
+  ServeStaticModule.forRoot({
     rootPath: join(__dirname, '..', 'uploads'),
     serveRoot: '/uploads',
+  }),
+  CacheModule.register({
+    ttl: 60,
+    max: 100,
   }),
     GlobalsubcategoryModule,
     MessageModule,
@@ -38,6 +49,6 @@ export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(OriginCheckMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
+    .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }

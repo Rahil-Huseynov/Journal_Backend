@@ -1,64 +1,75 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
-import helmet from 'fastify-helmet';
-import fastifyCors from '@fastify/cors';
+import { ValidationPipe } from '@nestjs/common';
 import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
 import { PrismaService } from './prisma/prisma.service';
-import fastifyCompress from 'fastify-compress';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
+import * as compression from 'compression';
+import { CustomCacheInterceptor } from './common/interceptors/custom-cache.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter(),
-    {
-      logger: false,
-    },
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'debug', 'log', 'verbose'],
+  });
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+    }),
   );
 
-  await app.register(fastifyCompress, {
-    encodings: ['br', 'gzip'], 
+
+  const cacheManager = app.get(CACHE_MANAGER);
+  const reflector = app.get(Reflector);
+  const httpAdapterHost = app.get(HttpAdapterHost);
+
+  app.use(compression({ threshold: 0 }));
+
+  app.useGlobalInterceptors(
+    new CustomCacheInterceptor(cacheManager, reflector, httpAdapterHost),
+  );
+
+
+  app.use((req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    next();
   });
 
-
-  await app.register(helmet, {
-    contentSecurityPolicy: false,
+  app.use((req, res, next) => {
+    const ua = req.headers['user-agent']?.toLowerCase() || '';
+    if (ua.includes('curl') || ua.includes('wget') || ua.includes('httpie')) {
+      return res.status(403).send('CLI sorğulara icazə verilmir.');
+    }
+    next();
   });
 
-  const fastifyInstance = app.getHttpAdapter().getInstance();
+  app.use(rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Çox sorğu göndərirsiniz, bir az sonra yenidən cəhd edin.',
+  }));
 
-  fastifyInstance.addHook('onSend', async (request, reply, payload) => {
-    reply.header('Cross-Origin-Resource-Policy', 'cross-origin');
-    reply.header('Cross-Origin-Opener-Policy', 'same-origin');
-    return payload;
-  });
 
-  await app.register(fastifyCors, {
-    origin: (origin, cb) => {
+  app.enableCors({
+    origin: (origin, callback) => {
       const allowedOrigins = [
         'https://my-project-rahil.netlify.app',
         'http://localhost:3000',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
-        cb(null, true);
-        return;
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
       }
-      cb(new Error('Not allowed by CORS'), false);
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-
-  const prisma = app.get(PrismaService);
-
-  app.useGlobalInterceptors(
-    new HttpLoggingInterceptor(prisma),
-    new ClassSerializerInterceptor(app.get(Reflector)),
-  );
 
   app.setGlobalPrefix('api');
 
@@ -70,6 +81,8 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ? Number(process.env.PORT) : 3001, '0.0.0.0');
+  await app.listen(process.env.PORT ? Number(process.env.PORT) : 3001);
+  console.log(`🚀 Server running on port ${process.env.PORT ?? 3001}`);
 }
+
 bootstrap();
