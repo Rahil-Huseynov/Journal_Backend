@@ -48,7 +48,7 @@ async function bootstrap() {
 
   app.use(rateLimit({
     windowMs: 60 * 1000,
-    max: 60,
+    max: 120,
     standardHeaders: true,
     legacyHeaders: false,
     message: 'Çox sorğu göndərirsiniz, bir az sonra yenidən cəhd edin.',
